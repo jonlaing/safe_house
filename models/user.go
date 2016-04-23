@@ -1,6 +1,9 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
+)
 
 // UserType is the type of user
 type UserType int
@@ -40,8 +43,8 @@ const (
 
 // User represents any user. Their type, status, and duration indicates their usage
 type User struct {
-	ID              uint64          `json:"id"`
-	Username        string          `json:"username"`
+	ID              uint64          `json:"id" gorm:"primary_key"`
+	Username        string          `json:"username" sql:"not null;unique_index"`
 	Type            UserType        `json:"type"`
 	Status          UserStatus      `json:"status"`
 	Capacity        int             `json:"capacity"` // How many people a housing user can take in
@@ -62,6 +65,25 @@ type User struct {
 
 // GetUserByID finds a user based on their ID
 func GetUserByID(id uint64, db *gorm.DB) (user User, err error) {
-	err := db.Where("user_id = ?", id).Find(&user).Error
+	if err = db.Where("user_id = ?", id).Find(&user).Error; err != nil {
+		err = ErrUserNotFound
+	}
+
 	return
+}
+
+func GetUserByName(username string, db *gorm.DB) (user User, err error) {
+	if err = db.Where("username = ?", username).Find(&user).Error; err != nil {
+		err = ErrUserNotFound
+	}
+
+	return
+}
+
+func (u *User) Authenticate(password string) error {
+	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password)); err != nil {
+		return ErrWrongPassword
+	}
+
+	return nil
 }

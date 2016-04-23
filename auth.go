@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -25,29 +24,23 @@ func init() {
 	}
 }
 
-func Auth(redirectPath string) gin.HandlerFunc {
+// Auth is middleware for authenticating users requests
+func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sess := sessions.Default(c)
 		tokn, ok := c.Request.Header["X-Auth-Token"]
 
 		if !ok {
-			c.AbortWithError(http.StatusUnauthorized, errors.New("X-Auth-Token must be in header"))
+			c.AbortWithError(http.StatusUnauthorized, ErrNoTokenHeader)
 			return
 		}
 
 		var userID int
 
-		token, err := jwt.Parse(tokn[0], func(token *jwt.Token) (interface{}, error) {
-			// Don't forget to validate the alg is what you expect:
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-
-			return hmacKey, nil
-		})
-
+		// parsingKey is a func defined further down in this file
+		token, err := jwt.Parse(tokn[0], parsingKey)
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("Problems parsing token"))
+			c.AbortWithError(http.StatusUnauthorized, ErrParseToken)
 			return
 		}
 
@@ -61,7 +54,7 @@ func Auth(redirectPath string) gin.HandlerFunc {
 		db := GetDB(c)
 		user, err := models.GetUserByID(userID)
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("Couldn't find user: %d", userID))
+			c.AbortWithError(http.StatusUnauthorized, models.ErrUserNotFound)
 			return
 		}
 
@@ -80,6 +73,19 @@ func Login(user m.User, c *gin.Context) (tokenString string, err error) {
 
 	// Sign and get the complete encoded token as a string
 	tokenString, err = token.SignedString(hmacKey)
+	if err != nil {
+		err = ErrAuthToken
+	}
 
 	return
+}
+
+// returns the signing key to parse the token
+func parsingKey(token *jwt.Token) (interface{}, error) {
+	// Don't forget to validate the alg is what you expect:
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, ErrUnexpectedSigningMethod{token.Header["alg"]}
+	}
+
+	return hmacKey, nil
 }
