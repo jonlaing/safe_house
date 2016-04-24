@@ -46,11 +46,11 @@ func (e UserTypeStatusValidationError) Error() string {
 
 type UserStatusValidationError struct{}
 
-func (e UserTypeStatusValidationError) Field() string {
+func (e UserStatusValidationError) Field() string {
 	return "Status"
 }
 
-func (e UserTypeStatusValidationError) Error() string {
+func (e UserStatusValidationError) Error() string {
 	return "Invalid user status"
 }
 
@@ -62,16 +62,6 @@ func (e UserTypeDurationValidationError) Field() string {
 
 func (e UserTypeDurationValidationError) Error() string {
 	return "Invalid housing duration for this user type"
-}
-
-type UserDurationValidationError struct{}
-
-func (e UserDurationValidationError) Field() string {
-	return "Duration"
-}
-
-func (e UserDurationValidationError) Error() string {
-	return "Invalid housing duration"
 }
 
 type UserDurationValidationError struct{}

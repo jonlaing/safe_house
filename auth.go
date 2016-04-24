@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"partisan/models"
+	"safe_house/models"
 	"strconv"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +26,6 @@ func init() {
 // Auth is middleware for authenticating users requests
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := sessions.Default(c)
 		tokn, ok := c.Request.Header["X-Auth-Token"]
 
 		if !ok {
@@ -52,7 +50,7 @@ func Auth() gin.HandlerFunc {
 
 		// Check this is the right user with correct API key
 		db := GetDB(c)
-		user, err := models.GetUserByID(userID)
+		user, err := models.GetUserByID(uint64(userID), db)
 		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, models.ErrUserNotFound)
 			return
@@ -64,12 +62,11 @@ func Auth() gin.HandlerFunc {
 }
 
 // Login a user
-func Login(user m.User, c *gin.Context) (tokenString string, err error) {
+func Login(user models.User, c *gin.Context) (tokenString string, err error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Set some claims
 	token.Claims["user_id"] = user.ID
-	token.Claims["api_key"] = user.APIKey
 
 	// Sign and get the complete encoded token as a string
 	tokenString, err = token.SignedString(hmacKey)
@@ -81,7 +78,7 @@ func Login(user m.User, c *gin.Context) (tokenString string, err error) {
 }
 
 // CurrentUser gets the current user from the context
-func CurrentUser(c *gin.Context) (u m.User, err error) {
+func CurrentUser(c *gin.Context) (u models.User, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = ErrNoUser
@@ -94,7 +91,7 @@ func CurrentUser(c *gin.Context) (u m.User, err error) {
 		return
 	}
 
-	u = user.(m.User)
+	u = user.(models.User)
 
 	return
 }

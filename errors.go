@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const (
+var (
 	ErrNoTokenHeader = errors.New("X-Auth-Token must be in header")
 	ErrAuthToken     = errors.New("Couldn't make token for specified user")
 	ErrParseToken    = errors.New("Couldn't parse this user's token")

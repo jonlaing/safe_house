@@ -1,8 +1,11 @@
 package main
 
 import (
+	"log"
 	"net/http"
-	"partisan/logger"
+	"os"
+	"safe_house/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +18,7 @@ func main() {
 		defer func() {
 			if r := recover(); r != nil {
 				c.AbortWithStatus(http.StatusInternalServerError)
-				logger.Error.Println("Recovered Panic (main.go):", r)
+				log.Println("Recovered Panic (main.go):", r)
 			}
 		}()
 
@@ -40,7 +43,7 @@ func main() {
 	matches := r.Group("matches")
 	matches.Use(Auth())
 	{
-		matches.GET("/", MatchesIndex)
+		matches.POST("/", MatchesList)
 		matches.GET("/:user_id", MatchesShow)
 	}
 
@@ -53,4 +56,20 @@ func main() {
 		messages.PATCH("/:thread_id", MessageThreadUpdate)
 		messages.POST("/:thread_id", MessageCreate)
 	}
+
+	Database.AutoMigrate(
+		&models.User{},
+		&models.MessageThread{},
+		&models.MessageThreadUser{},
+		&models.Message{},
+	)
+
+	s := &http.Server{
+		Addr:           ":" + os.Getenv("PORT"),
+		Handler:        r,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   3 * time.Minute,
+		MaxHeaderBytes: 1 << 20,
+	}
+	s.ListenAndServe()
 }

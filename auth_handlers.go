@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"safe_house/models"
 
@@ -16,12 +15,7 @@ type LoginFields struct {
 
 // LoginHandler takes a JSON request, authenticates the user, then responds with the user info and a token
 func LoginHandler(c *gin.Context) {
-	db, err := GetDB(c)
-	if err != nil {
-		log.Println("Error finding database", err)
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
+	db := GetDB(c)
 
 	var login LoginFields
 	if err := c.BindJSON(&login); err != nil {
@@ -29,7 +23,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserByName(login.Username)
+	user, err := models.GetUserByName(login.Username, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
@@ -40,11 +34,14 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := Login(user)
+	token, err := Login(user, c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token, "user": user})
+}
+
+func LogoutHandler(c *gin.Context) {
 }

@@ -52,13 +52,13 @@ const (
 
 // User represents any user. Their type, status, and duration indicates their usage
 type User struct {
-	ID              uint64          `json:"id" gorm:"primary_key"`
-	Username        string          `json:"username" sql:"not null;unique_index"`
-	Type            UserType        `json:"type"`
-	Status          UserStatus      `json:"status"`
-	Capacity        int             `json:"capacity"` // How many people a housing user can take in
-	HousingDuration HousingDuration `json:"duration"`
-	PostalCode      string          `json:"postal_code"`
+	ID         uint64          `json:"id" gorm:"primary_key"`
+	Username   string          `json:"username" sql:"not null;unique_index"`
+	Type       UserType        `json:"type"`
+	Status     UserStatus      `json:"status"`
+	Capacity   int             `json:"capacity"` // How many people a housing user can take in
+	Duration   HousingDuration `json:"duration"`
+	PostalCode string          `json:"postal_code"`
 	// Only for those that are housing, this is not their exact location.
 	// It's an approximation based on their PostalCode
 	Latitude float64 `json:"latitude"`
@@ -69,7 +69,7 @@ type User struct {
 	Locale          string  `json:"locale"`
 	PasswordHash    []byte  `json:"-"`
 	Password        string  `json:"password" sql:"-"`
-	PasswordConfirm string  `json:"confirm" sql:"-"`
+	PasswordConfirm string  `json:"passworkd_confirm" sql:"-"`
 }
 
 // GetUserByID finds a user based on their ID
@@ -81,6 +81,7 @@ func GetUserByID(id uint64, db *gorm.DB) (user User, err error) {
 	return
 }
 
+// GetUserByName finds a user based on their Username
 func GetUserByName(username string, db *gorm.DB) (user User, err error) {
 	if err = db.Where("username = ?", username).Find(&user).Error; err != nil {
 		err = ErrUserNotFound
@@ -89,21 +90,27 @@ func GetUserByName(username string, db *gorm.DB) (user User, err error) {
 	return
 }
 
+// Authenticate compares a password with the hash stored in the database
 func (u *User) Authenticate(password string) error {
-	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(u.PasswordHash, []byte(password)); err != nil {
 		return ErrWrongPassword
 	}
 
 	return nil
 }
 
+// GenPasswordHash generates a hash from the provided password
 func (u *User) GenPasswordHash() error {
+	if u.Password == "" {
+		return ErrNoPassword
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.MinCost)
 	if err == nil {
 		u.PasswordHash = hash
 	}
 
-	return
+	return err
 }
 
 // GenCoordinates converts a postal code into coordinates
@@ -116,36 +123,37 @@ func (u *User) GenCoordinates() error {
 	return err
 }
 
+// Validate checks to make sure all the user fields are appropriate values
 func (u *User) Validate() (errors ValidationErrors) {
 	usernameRegex := regexp.MustCompile("(?i)^[a-z0-9-_]+$")
 	if !usernameRegex.MatchString(u.Username) {
-		errors = append(errors, UsernameValidationError)
+		errors = append(errors, UsernameValidationError{})
 	}
 
 	if u.Type < 0 || u.Type > UTHousing {
-		errors = append(errors, UserTypeValidationError)
+		errors = append(errors, UserTypeValidationError{})
 	}
 
 	if (u.Type == UTLooking && u.Status > USNotHousing) ||
 		(u.Type == UTHousing && u.Status == USNotHousing) {
-		errors = append(errors, UserTypeStatusValidationError)
+		errors = append(errors, UserTypeStatusValidationError{})
 	}
 
 	if u.Status < 0 || u.Status > USAvailable {
-		errors = append(errors, UserStatusValidationError)
+		errors = append(errors, UserStatusValidationError{})
 	}
 
-	if (u.Type == UTLooking && u.Duration > UHDNone) ||
-		(u.Type == UTHousing && u.Duration == UHDNone) {
-		errors = append(errors, UserTypeDurationValidationError)
+	if (u.Type == UTLooking && u.Duration > UHDNoDuration) ||
+		(u.Type == UTHousing && u.Duration == UHDNoDuration) {
+		errors = append(errors, UserTypeDurationValidationError{})
 	}
 
 	if u.Duration > UHDLongTerm {
-		errors = append(errors, UserDurationValidationError)
+		errors = append(errors, UserDurationValidationError{})
 	}
 
-	if u.Password != u.PasswordConfirm {
-		errors = append(errors, UserPasswordValidationError)
+	if u.Password == "" || u.Password != u.PasswordConfirm {
+		errors = append(errors, UserPasswordValidationError{})
 	}
 
 	return
@@ -162,7 +170,7 @@ func (u *User) Merge(u2 User) {
 		u.Status = u2.Status
 	}
 
-	if u2.Duration != USNoDuration {
+	if u2.Duration != UHDNoDuration {
 		u.Duration = u2.Duration
 	}
 
