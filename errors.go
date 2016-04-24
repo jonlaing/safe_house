@@ -9,6 +9,7 @@ const (
 	ErrNoTokenHeader = errors.New("X-Auth-Token must be in header")
 	ErrAuthToken     = errors.New("Couldn't make token for specified user")
 	ErrParseToken    = errors.New("Couldn't parse this user's token")
+	ErrNoUser        = errors.New("Could not find current user")
 )
 
 type ErrUnexpectedSigningMethod struct {

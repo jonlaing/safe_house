@@ -80,6 +80,25 @@ func Login(user m.User, c *gin.Context) (tokenString string, err error) {
 	return
 }
 
+// CurrentUser gets the current user from the context
+func CurrentUser(c *gin.Context) (u m.User, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = ErrNoUser
+		}
+	}()
+
+	user, ok := c.Get("user")
+	if !ok {
+		err = ErrNoUser
+		return
+	}
+
+	u = user.(m.User)
+
+	return
+}
+
 // returns the signing key to parse the token
 func parsingKey(token *jwt.Token) (interface{}, error) {
 	// Don't forget to validate the alg is what you expect:

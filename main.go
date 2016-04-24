@@ -24,16 +24,15 @@ func main() {
 
 	// AUTH ROUTES
 	{
-		r.Group("login", LoginHandler)
-		r.Group("logout", LogoutHandler)
-		r.Group("signUp", SignUpHandler)
+		r.POST("login", LoginHandler)
+		r.GET("logout", LogoutHandler)
+		r.POST("signUp", UserCreate)
 	}
 
 	user := r.Group("user")
 	user.Use(Auth())
 	{
-		user.GET("/", UserShow)
-		user.POST("/", UserCreate)
+		user.GET("/", UserShow) // Show the current user
 		user.PATCH("/", UserUpdate)
 		user.DELETE("/", UserDelete)
 	}
