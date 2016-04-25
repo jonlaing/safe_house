@@ -7,22 +7,42 @@
 import React, {
   AppRegistry,
   Component,
-  StyleSheet,
-  Text,
-  View
+  AsyncStorage,
+  Text
 } from 'react-native';
 
 import ExNavigator from '@exponent/react-native-navigator';
 
 import Router from './app/Router';
-import WelcomeScreen from './app/WelcomeScreen';
 
 class SafeHouseApp extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { token: null, tokenFetched: false };
+  }
+
+  componentDidMount() {
+    // AsyncStorage.removeItem('AUTH_TOKEN');
+    AsyncStorage.getItem('AUTH_TOKEN')
+    .then(tok => this.setState({token: tok, tokenFetched: true}))
+    .catch((err) => { console.log(err); this.setState({tokenFetched: true}); });
+  }
+
   _initialRoute() {
+    if(this.state.token !== null && this.state.tokenFetched === true) {
+      console.log("token:", this.state.token);
+      return Router.matchesScreen(this.state.token);
+    }
+
     return Router.welcomeScreen();
   }
 
   render() {
+    if(this.state.tokenFetched === false) {
+      return <Text>Loading...</Text>;
+    }
+
     return (
       <ExNavigator
         initialRoute={this._initialRoute()}
@@ -32,24 +52,5 @@ class SafeHouseApp extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
 
 AppRegistry.registerComponent('SafeHouseApp', () => SafeHouseApp);

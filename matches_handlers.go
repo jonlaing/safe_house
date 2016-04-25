@@ -11,11 +11,13 @@ import (
 )
 
 type searchParams struct {
-	Latitude  float64       `json:"latitude"`
-	Longitude float64       `json:"longitude"`
-	Unit      location.Unit `json:"unit"`
-	Distance  int           `json:"distance"`
-	Page      int           `json:"page"`
+	Latitude  float64                `json:"latitude"`
+	Longitude float64                `json:"longitude"`
+	Unit      location.Unit          `json:"unit"`
+	Distance  float64                `json:"distance"`
+	Capacity  int                    `json:"capacity"`
+	Duration  models.HousingDuration `json:"duration"`
+	Page      int                    `json:"page"`
 }
 
 // MatchesList takes a JSON post and searches for matches based on those parameters.
@@ -38,7 +40,7 @@ func MatchesList(c *gin.Context) {
 
 	distance := location.NewDistancer(search.Distance, search.Unit)
 
-	users, err := models.ListMatches(currentUser.Capacity, currentUser.Duration, search.Latitude, search.Longitude, distance, search.Page, db)
+	users, err := models.ListMatches(currentUser.Capacity, search.Duration, search.Latitude, search.Longitude, distance, search.Page, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return

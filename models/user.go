@@ -2,6 +2,7 @@ package models
 
 import (
 	"regexp"
+	"safe_house/location"
 
 	"github.com/jasonmoo/geo"
 	"github.com/jinzhu/gorm"
@@ -40,8 +41,6 @@ type HousingDuration int
 const (
 	// UHDNoDuration is the zero value
 	UHDNoDuration HousingDuration = iota
-	// UHDLooking indicates that a user is lookig thus cannot house
-	UHDLooking
 	// UHDShortTerm indicates that a user can house people for a short period of time
 	UHDShortTerm
 	// UHDMediumTerm inidicates that a user can house people for something between short and long
@@ -64,17 +63,18 @@ type User struct {
 	Latitude float64 `json:"latitude"`
 	// Only for those that are housing, this is not their exact location.
 	// It's an approximation based on their PostalCode
-	Longitude       float64 `json:"longitude"`
-	Profile         string  `json:"profile"`
-	Locale          string  `json:"locale"`
-	PasswordHash    []byte  `json:"-"`
-	Password        string  `json:"password" sql:"-"`
-	PasswordConfirm string  `json:"passworkd_confirm" sql:"-"`
+	Longitude       float64            `json:"longitude"`
+	Profile         string             `json:"profile"`
+	Locale          string             `json:"locale"`
+	PasswordHash    []byte             `json:"-"`
+	Password        string             `json:"password" sql:"-"`
+	PasswordConfirm string             `json:"password_confirm" sql:"-"`
+	Distance        location.Distancer `json:"distance" sql:"-"` // For displaying distances of matches
 }
 
 // GetUserByID finds a user based on their ID
 func GetUserByID(id uint64, db *gorm.DB) (user User, err error) {
-	if err = db.Where("user_id = ?", id).Find(&user).Error; err != nil {
+	if err = db.Where("id = ?", id).Find(&user).Error; err != nil {
 		err = ErrUserNotFound
 	}
 
@@ -143,9 +143,17 @@ func (u *User) Validate() (errors ValidationErrors) {
 		errors = append(errors, UserStatusValidationError{})
 	}
 
+	if u.Type == UTHousing && u.Capacity < 1 {
+		errors = append(errors, UserTypeCapacityValidationError{})
+	}
+
 	if (u.Type == UTLooking && u.Duration > UHDNoDuration) ||
 		(u.Type == UTHousing && u.Duration == UHDNoDuration) {
 		errors = append(errors, UserTypeDurationValidationError{})
+	}
+
+	if u.Type == UTHousing && u.PostalCode == "" {
+		errors = append(errors, UserTypePostalCodeValidationError{})
 	}
 
 	if u.Duration > UHDLongTerm {

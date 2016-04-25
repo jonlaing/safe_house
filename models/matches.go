@@ -30,6 +30,15 @@ func (m *MatchList) Distance(u User) float64 {
 	return math.Sqrt(math.Pow(m.Longitude-u.Longitude, 2) + math.Pow(m.Latitude-u.Latitude, 2))
 }
 
+// GenDistances generates the Distance field for all of the users based on the current
+// user's geolocation. It's mostly approximate.
+func (m *MatchList) GenDistances(unit location.Unit) {
+	for k, u := range m.Users {
+		d := location.NewDistancerFromDegrees(m.Distance(u), unit)
+		m.Users[k].Distance = d
+	}
+}
+
 // ListMatches gets a list of users that are available and in the area
 func ListMatches(capacity int, duration HousingDuration, lat, long float64, distance location.Distancer, page int, db *gorm.DB) (users []User, err error) {
 	geoBounds, err := location.CalcGeoBounds(lat, long, distance.Degrees())
@@ -41,7 +50,7 @@ func ListMatches(capacity int, duration HousingDuration, lat, long float64, dist
 		Where("longitude > ? AND longitude < ?", geoBounds.Longitude.Min, geoBounds.Longitude.Max).
 		Where("type = ?", UTHousing).
 		Where("status = ?", USAvailable).
-		Where("housing_duration >= ?", duration).
+		Where("duration >= ?", duration).
 		Where("capacity >= ?", capacity).
 		Limit(25).
 		Offset(page).
@@ -55,6 +64,7 @@ func ListMatches(capacity int, duration HousingDuration, lat, long float64, dist
 			Longitude: long,
 			Users:     users,
 		}
+		matches.GenDistances(distance.Unit())
 
 		sort.Sort(&matches)
 		return matches.Users, nil

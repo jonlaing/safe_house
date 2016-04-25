@@ -7,11 +7,12 @@ type ValidationError interface {
 
 type ValidationErrors []ValidationError
 
-func (ve ValidationErrors) ToMap() (errs map[string]string) {
+func (ve ValidationErrors) ToMap() map[string]string {
+	errs := make(map[string]string, len(ve))
 	for _, e := range ve {
 		errs[e.Field()] = e.Error()
 	}
-	return
+	return errs
 }
 
 type UsernameValidationError struct{}
@@ -82,4 +83,24 @@ func (e UserPasswordValidationError) Field() string {
 
 func (e UserPasswordValidationError) Error() string {
 	return "Password and password confirmation don't match"
+}
+
+type UserTypePostalCodeValidationError struct{}
+
+func (e UserTypePostalCodeValidationError) Field() string {
+	return "Postal Code"
+}
+
+func (e UserTypePostalCodeValidationError) Error() string {
+	return "Postal Code must not be blank for this user type."
+}
+
+type UserTypeCapacityValidationError struct{}
+
+func (e UserTypeCapacityValidationError) Field() string {
+	return "Capacity"
+}
+
+func (e UserTypeCapacityValidationError) Error() string {
+	return "You must select at least one person to house"
 }

@@ -32,12 +32,13 @@ type GeoBounds struct {
 // Distancer represents a distance in either Miles or Kilometers
 type Distancer interface {
 	Degrees() float64
+	Unit() Unit
 }
 
-type Miles int
-type Kilometers int
+type Miles float64
+type Kilometers float64
 
-func NewDistancer(v int, unit Unit) Distancer {
+func NewDistancer(v float64, unit Unit) Distancer {
 	if unit == UMiles {
 		return Miles(v)
 	}
@@ -45,14 +46,30 @@ func NewDistancer(v int, unit Unit) Distancer {
 	return Kilometers(v)
 }
 
-// converts miles from the context params (string) into coordinate degrees
+func NewDistancerFromDegrees(v float64, unit Unit) Distancer {
+	if unit == UMiles {
+		return Miles(v * earthRadiusMiles * math.Pi / float64(180))
+	}
+
+	return Kilometers(v * earthRadiusKm * math.Pi / float64(180))
+}
+
+// Degrees converts miles from the context params (string) into coordinate degrees
 func (m Miles) Degrees() float64 {
 	return float64(m) / earthRadiusMiles * float64(180) / math.Pi
 }
 
-// converts miles from the context params (string) into coordinate degrees
+func (m Miles) Unit() Unit {
+	return UMiles
+}
+
+// Degrees converts miles from the context params (string) into coordinate degrees
 func (k Kilometers) Degrees() float64 {
 	return float64(k) / earthRadiusKm * float64(180) / math.Pi
+}
+
+func (k Kilometers) Unit() Unit {
+	return UKilometers
 }
 
 func CalcGeoBounds(lat, long, rad float64) (bounds GeoBounds, err error) {

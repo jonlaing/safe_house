@@ -4,6 +4,7 @@ import React, {
   Component,
   StyleSheet,
   TouchableHighlight,
+  Image,
   View,
   Text
 } from 'react-native';
@@ -19,6 +20,9 @@ export default class WelcomeScreen extends Component {
     return (
       <View style={styles.container}>
         <Text style={styles.header}>{I18n.t('welcome')}</Text>
+        <View style={styles.imageContainer}>
+          <Image style={styles.image} source={require('./images/refugees.png')}/>
+        </View>
         <View style={styles.hr} />
         <Text style={styles.paragraph}>{I18n.t('welcomeParagraph')}</Text>
         <TouchableHighlight style={styles.button} onPress={() => this.props.navigator.push(Router.signUpLooking())}>
@@ -27,10 +31,16 @@ export default class WelcomeScreen extends Component {
             <Text style={styles.buttonText}>{I18n.t('looking')}</Text>
           </View>
         </TouchableHighlight>
-        <TouchableHighlight style={styles.button}>
+        <TouchableHighlight style={styles.button} onPress={() => this.props.navigator.push(Router.signUpHosting())}>
           <View style={styles.buttonInner}>
             <Icon style={styles.buttonIcon} name="home" size={48} color="white" />
             <Text style={styles.buttonText}>{I18n.t('hosting')}</Text>
+          </View>
+        </TouchableHighlight>
+        <TouchableHighlight style={[styles.button, {backgroundColor: 'transparent'}]} onPress={() => this.props.navigator.push(Router.loginScreen())}>
+          <View style={[styles.buttonInner, {justifyContent: 'center'}]}>
+            <Icon style={{marginRight: 8}} name="lock-open" size={32} color="grey" />
+            <Text style={[styles.buttonText, {color: 'grey'}]}>{I18n.t('login')}</Text>
           </View>
         </TouchableHighlight>
       </View>
@@ -44,8 +54,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'stretch',
-    backgroundColor: Colors.action,
-    paddingVertical: 64,
+    backgroundColor: 'white',
+    paddingTop: 64,
     paddingHorizontal: 16
   },
   header: {
@@ -53,13 +63,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 28,
     fontWeight: '200',
-    color: 'white'
+    color: Colors.action
+  },
+  imageContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end'
+  },
+  image: {
+    height: 45,
+    width: 79,
+    marginRight: 16
   },
   hr: {
     height: 0,
     borderWidth: 0.5,
-    borderColor: 'white',
-    marginVertical: 32
+    borderColor: 'lightgrey',
+    marginBottom: 32
   },
   paragraph: {
     flex: 2,
@@ -67,7 +88,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 28,
     textAlign: 'center',
-    color: 'white'
+    color: 'grey'
   },
   button: {
     flex: 2,
@@ -75,8 +96,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 8,
-    borderColor: 'white',
-    borderWidth: 2,
+    backgroundColor: Colors.action,
     borderRadius: 8
   },
   buttonInner: {

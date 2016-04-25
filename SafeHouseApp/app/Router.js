@@ -26,6 +26,24 @@ let Router = {
         return <SignUpHosting navigator={navigator} />;
       }
     };
+  },
+
+  loginScreen() {
+    return {
+      renderScene(navigator) {
+        let LoginScreen = require('./LoginScreen');
+        return <LoginScreen navigator={navigator} />;
+      }
+    };
+  },
+
+  matchesScreen(token) {
+    return {
+      renderScene(navigator) {
+        let MatchesScreen = require('./MatchesScreen');
+        return <MatchesScreen token={token} navigator={navigator} />;
+      }
+    };
   }
 };
 

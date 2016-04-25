@@ -9,7 +9,7 @@ import (
 
 // LoginFields represent a JSON binding format for login requests
 type LoginFields struct {
-	Username string `json:"username" binding:"reqiured"`
+	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -19,7 +19,7 @@ func LoginHandler(c *gin.Context) {
 
 	var login LoginFields
 	if err := c.BindJSON(&login); err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
+		c.AbortWithError(http.StatusNotAcceptable, err)
 		return
 	}
 

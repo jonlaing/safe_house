@@ -18,13 +18,20 @@ I18n.translations = {
     summary: 'Tell us a little about yourself',
     password: 'Password',
     passwordConfirm: 'Password Confirm',
-    // SIGN UP LOOKING
-    capacityL: 'For how many people?',
-    durationL: 'For how long?',
-    // SIGN UP HOSTING
+    capacity: 'How many people?',
+    duration: 'For how long?',
     postalCode: 'Postal Code',
-    capacityH: 'How many people can you house?',
-    durationH: 'For how long can you house someone?'
+
+    // LOG IN
+    login: 'Log In',
+    incorrectUsername: 'This username was not found.',
+    incorrectPassword: 'This password is incorrect.',
+
+    submit: 'Submit',
+    cancel: 'Cancel',
+    problem: 'There was a problem.',
+    person: 'person',
+    people: 'people'
   }
 };
 

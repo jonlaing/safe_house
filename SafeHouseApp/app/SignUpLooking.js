@@ -11,13 +11,17 @@ import React, {
   Text
 } from 'react-native';
 
+import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import I18n from './i18n';
+import Api from './Api';
 import Colors from './Colors';
 
 import NavBar from './NavBar';
+import IconButton from './IconButton';
+import IconInput from './IconInput';
 
 export default class SignUpLooking extends Component {
   constructor(props) {
@@ -29,8 +33,54 @@ export default class SignUpLooking extends Component {
       showCapacityPicker: false,
       summary: '',
       password: '',
-      passwordConfirm: ''
+      passwordConfirm: '',
+      usernameError: '',
+      capacityError: '',
+      passwordError: ''
     };
+  }
+
+  _handleSubmit() {
+    this.setState({
+      usernameError: '',
+      capacityError: '',
+      passwordError: ''
+    });
+
+    Api.auth().signUpLooking(
+      this.state.username,
+      this.state.capacity,
+      this.state.summary,
+      this.state.password,
+      this.state.passwordConfirm
+    )
+    .then(resp => console.log(resp))
+    .then(() => this.props.navigator.pop())
+    .catch((err) => this._handleErrors(err));
+  }
+
+  _handleErrors(err) {
+    if(err.validation_errors === undefined) {
+      console.log(err);
+      return;
+    }
+
+    let newState = {};
+    _.forOwn(err.validation_errors, (v, k) => {
+      switch (k) {
+              case "Password":
+                      newState.passwordError = v;
+                      break;
+              case "Username":
+                      newState.usernameError = v;
+                      break;
+              case "Capacity":
+                      newState.capacityError = v;
+                      break;
+      }
+    });
+
+    this.setState(newState);
   }
 
   _renderCapacityPicker() {
@@ -43,7 +93,7 @@ export default class SignUpLooking extends Component {
         style={styles.picker}
         selectedValue={this.state.capacity}
         onValueChange={cap => this.setState({capacity: cap, showCapacityPicker: false})}>
-        <Picker.Item label={I18n.t('capacityL')} value={null} />
+        <Picker.Item label={I18n.t('capacity')} value={null} />
         <Picker.Item label="1 person" value={1} />
         <Picker.Item label="2 people" value={2} />
         <Picker.Item label="3 people" value={3} />
@@ -60,7 +110,7 @@ export default class SignUpLooking extends Component {
 
   _capacityToString() {
     if(this.state.capacity === null) {
-      return I18n.t('capacityL');
+      return I18n.t('capacity');
     }
 
     if(this.state.capacity === 10) {
@@ -75,86 +125,61 @@ export default class SignUpLooking extends Component {
       <View style={styles.container}>
         <ScrollView>
           <View style={styles.scroll}>
-            <View style={styles.inputBlock}>
-              <View style={styles.inputBlockInner}>
-                <Icon style={styles.inputIcon} name="account-circle" size={32} color="grey" />
+            <IconInput name="account-circle" error={this.state.usernameError}>
+              <TextInput
+                style={styles.input}
+                placeholder={I18n.t('username')}
+                autoCorrect={false}
+                autoCapitalize='none'
+                value={this.state.username}
+                autoFocus={true}
+                onChangeText={text => this.setState({username: text})}
+              />
+            </IconInput>
+            <IconInput name="people" error={this.state.capacityError}>
+              <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showCapacityPicker: true})}>
                 <TextInput
-                  style={styles.input}
-                  placeholder={I18n.t('username')}
-                  autoCorrect={false}
-                  autoCapitalize='none'
-                  value={this.state.username}
-                  autoFocus={true}
-                  onChangeText={text => this.setState({username: text})}
+                  style={[styles.input, {color: 'grey'}]}
+                  placeholder={I18n.t('capacity')}
+                  value={this._capacityToString()}
+                  editable={false}
                 />
-              </View>
-            </View>
-            <View style={styles.inputBlock}>
-              <View style={styles.inputBlockInner}>
-                <Icon style={styles.inputIcon} name="people" size={32} color="grey" />
-                <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showCapacityPicker: true})}>
-                  <TextInput
-                    style={[styles.input, {color: 'grey'}]}
-                    placeholder={I18n.t('capacityL')}
-                    value={this._capacityToString()}
-                    editable={false}
-                  />
-                </TouchableHighlight>
-              </View>
-            </View>
-            <View style={styles.inputBlockLarge}>
-              <View style={styles.inputBlockInner}>
-                <Icon style={[styles.inputIcon, {alignSelf: 'flex-start'}]} name="comment" size={32} color="grey" />
-                <TextInput
-                  style={styles.textBlock}
-                  placeholder={I18n.t('summary')}
-                  value={this.state.summary}
-                  onChangeText={text => this.setState({summary: text})}
-                  multiline={true}
-                  returnKeyType='done'
-                />
-              </View>
-            </View>
-            <View style={styles.inputBlock}>
-              <View style={styles.inputBlockInner}>
-                <Icon style={styles.inputIcon} name="lock" size={32} color="grey" />
-                <TextInput
-                  style={styles.input}
-                  placeholder={I18n.t('password')}
-                  value={this.state.password}
-                  secureTextEntry={true}
-                  onChangeText={text => this.setState({password: text})}
-                />
-              </View>
-            </View>
-            <View style={styles.inputBlock}>
-              <View style={styles.inputBlockInner}>
-                <Icon style={styles.inputIcon} name="lock-outline" size={32} color="grey" />
-                <TextInput
-                  style={styles.input}
-                  placeholder={I18n.t('passwordConfirm')}
-                  value={this.state.passwordConfirm}
-                  secureTextEntry={true}
-                  onChangeText={text => this.setState({passwordConfirm: text})}
-                />
-              </View>
-            </View>
+              </TouchableHighlight>
+            </IconInput>
+            <IconInput name="comment" large={true} error={this.state.summaryError}>
+              <TextInput
+                style={styles.textBlock}
+                placeholder={I18n.t('summary')}
+                value={this.state.summary}
+                onChangeText={text => this.setState({summary: text})}
+                multiline={true}
+                returnKeyType='done'
+              />
+            </IconInput>
+            <IconInput name="lock" error={this.state.passwordError}>
+              <TextInput
+                style={styles.input}
+                placeholder={I18n.t('password')}
+                value={this.state.password}
+                secureTextEntry={true}
+                onChangeText={text => this.setState({password: text})}
+              />
+            </IconInput>
+            <IconInput name="lock-outline" error={this.state.passwordError}>
+              <TextInput
+                style={styles.input}
+                placeholder={I18n.t('passwordConfirm')}
+                value={this.state.passwordConfirm}
+                secureTextEntry={true}
+                onChangeText={text => this.setState({passwordConfirm: text})}
+              />
+            </IconInput>
           </View>
           <View style={styles.hr} />
           <View style={styles.actionContainer}>
             <View style={styles.actionInner}>
-              <TouchableHighlight>
-                <View style={[styles.actionButton, styles.actionButtonMain]}>
-                  <Icon style={styles.actionIcon} name="check-circle" size={24} color="white" />
-                  <Text style={styles.actionTextMain}>Submit</Text>
-                </View>
-              </TouchableHighlight>
-              <TouchableHighlight onPress={() => this.props.navigator.pop()}>
-                <View style={styles.actionButton}>
-                  <Icon style={styles.actionIcon} name="close" size={24} color="grey" />
-                  <Text style={styles.actionTextSecondary}>Cancel</Text>
-                </View>
-              </TouchableHighlight>
+              <IconButton name="check-circle" label={I18n.t('submit')} primary={true} onPress={this._handleSubmit.bind(this)} />
+              <IconButton name="close" label={I18n.t('cancel')} onPress={() => this.props.navigator.pop()} />
             </View>
           </View>
         </ScrollView>
@@ -163,6 +188,8 @@ export default class SignUpLooking extends Component {
           title={I18n.t('signUp')}
           leftButton={<Icon name="chevron-left" size={32} color={Colors.action} />}
           leftButtonPress={() => this.props.navigator.pop()}
+          rightButton={<Icon name="help-outline" size={24} color={Colors.action} />}
+          rightButtonPress={() => this.props.navigator.pop()}
         />
         <KeyboardSpacer />
       </View>

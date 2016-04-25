@@ -10,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
 func main() {
 	r := gin.Default()
 	r.Use(DB())
@@ -29,7 +33,7 @@ func main() {
 	{
 		r.POST("login", LoginHandler)
 		r.GET("logout", LogoutHandler)
-		r.POST("signUp", UserCreate)
+		r.POST("signup", UserCreate)
 	}
 
 	user := r.Group("user")

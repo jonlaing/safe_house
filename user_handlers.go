@@ -35,6 +35,11 @@ func UserCreate(c *gin.Context) {
 		return
 	}
 
+	if err := user.GenPasswordHash(); err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
 	// Only generate coordinates if this user is offering housing
 	if user.Type == models.UTHousing {
 		if err := user.GenCoordinates(); err != nil {
