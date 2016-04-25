@@ -12,21 +12,23 @@ import React, {
   View
 } from 'react-native';
 
+import ExNavigator from '@exponent/react-native-navigator';
+
+import Router from './app/Router';
+import WelcomeScreen from './app/WelcomeScreen';
+
 class SafeHouseApp extends Component {
+  _initialRoute() {
+    return Router.welcomeScreen();
+  }
+
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-      </View>
+      <ExNavigator
+        initialRoute={this._initialRoute()}
+        style={{ flex: 1 }}
+        showNavigationBar={false}
+      />
     );
   }
 }
