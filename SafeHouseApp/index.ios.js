@@ -31,8 +31,7 @@ class SafeHouseApp extends Component {
 
   _initialRoute() {
     if(this.state.token !== null && this.state.tokenFetched === true) {
-      console.log("token:", this.state.token);
-      return Router.matchesScreen(this.state.token);
+      return Router.matchList(this.state.token);
     }
 
     return Router.welcomeScreen();

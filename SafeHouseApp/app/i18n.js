@@ -27,6 +27,13 @@ I18n.translations = {
     incorrectUsername: 'This username was not found.',
     incorrectPassword: 'This password is incorrect.',
 
+
+    // MATCHES
+    shortTerm: 'Short Term',
+    mediumTerm: 'Medium Term',
+    longTerm: 'Long Term',
+    nothing: 'There is nothing to show!',
+
     submit: 'Submit',
     cancel: 'Cancel',
     problem: 'There was a problem.',

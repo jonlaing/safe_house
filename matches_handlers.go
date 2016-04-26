@@ -1,9 +1,9 @@
 package main
 
 import (
+	"log"
 	"safe_house/location"
 	"safe_house/models"
-	"strconv"
 
 	"net/http"
 
@@ -38,6 +38,8 @@ func MatchesList(c *gin.Context) {
 		return
 	}
 
+	log.Println(search.Page)
+
 	distance := location.NewDistancer(search.Distance, search.Unit)
 
 	users, err := models.ListMatches(currentUser.Capacity, search.Duration, search.Latitude, search.Longitude, distance, search.Page, db)
@@ -53,14 +55,13 @@ func MatchesList(c *gin.Context) {
 func MatchesShow(c *gin.Context) {
 	db := GetDB(c)
 
-	userParam := c.Param("user_id")
-	userID, err := strconv.Atoi(userParam)
+	userID, err := ParamID("user_id", c)
 	if err != nil {
 		c.AbortWithError(http.StatusNotAcceptable, err)
 		return
 	}
 
-	user, err := models.GetUserByID(uint64(userID), db)
+	user, err := models.GetUserByID(userID, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return

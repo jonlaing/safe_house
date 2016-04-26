@@ -37,11 +37,11 @@ let Router = {
     };
   },
 
-  matchesScreen(token) {
+  matchList(token) {
     return {
       renderScene(navigator) {
-        let MatchesScreen = require('./MatchesScreen');
-        return <MatchesScreen token={token} navigator={navigator} />;
+        let MatchList = require('./MatchList');
+        return <MatchList token={token} navigator={navigator} />;
       }
     };
   }

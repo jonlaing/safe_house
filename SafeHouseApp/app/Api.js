@@ -114,7 +114,6 @@ let Api = {
       list(page, distance = 25, units = 0) {
         return new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition((pos) => {
-            console.log(pos.coords.latitude, pos.coords.longitude);
             let search = {
               latitude: pos.coords.latitude,
               longitude: pos.coords.longitude,
@@ -142,4 +141,3 @@ let Api = {
 export default Api;
 
 module.exports = Api;
-

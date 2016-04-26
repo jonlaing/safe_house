@@ -53,7 +53,7 @@ func ListMatches(capacity int, duration HousingDuration, lat, long float64, dist
 		Where("duration >= ?", duration).
 		Where("capacity >= ?", capacity).
 		Limit(25).
-		Offset(page).
+		Offset(page * 25).
 		Find(&users).
 		Error
 
