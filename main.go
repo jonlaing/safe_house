@@ -57,8 +57,12 @@ func main() {
 		messages.GET("/", MessageThreadIndex)
 		messages.POST("/", MessageThreadCreate)
 		messages.GET("/:thread_id", MessageThreadShow)
-		messages.PATCH("/:thread_id", MessageThreadUpdate)
+		messages.PATCH("/:thread_id/accept", MessageThreadStatus(models.MTOpened))
+		messages.PATCH("/:thread_id/close", MessageThreadStatus(models.MTClosed))
+		messages.PATCH("/:thread_id/block", MessageThreadStatus(models.MTBlocked))
+		messages.PATCH("/:thread_id/public_key", MessageThreadStatus(models.MTPubKeyChange))
 		messages.POST("/:thread_id", MessageCreate)
+		messages.GET("/:thread_id/subscribe", MessageThreadSubscribe)
 	}
 
 	Database.AutoMigrate(
