@@ -18,6 +18,16 @@ var wsupgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+// MessageThreadSubscription manages a subscription
+type MessageThreadSubscription struct {
+	conn   *websocket.Conn
+	thread models.MessageThread
+	user   models.User
+	msg    chan string
+	quit   chan bool
+}
+
+// MessageThreadSubscribe manages a websocket subscription to check for incoming messages
 func MessageThreadSubscribe(c *gin.Context) {
 	db := GetDB(c)
 
@@ -50,19 +60,24 @@ func MessageThreadSubscribe(c *gin.Context) {
 		return
 	}
 
-	msg := make(chan string)
-	quit := make(chan bool)
+	subscription := MessageThreadSubscription{
+		conn:   conn,
+		thread: mt,
+		user:   user,
+		msg:    make(chan string),
+		quit:   make(chan bool),
+	}
 
-	go messageReadLoop(conn, msg, quit)
-	go messageWriteLoop(user.ID, threadID, db, conn, msg, quit)
+	go subscription.MessageReadLoop()
+	go subscription.MessageWriteLoop(db)
 }
 
-func messageReadLoop(c *websocket.Conn, send chan string, quit chan bool) {
+func (sub MessageThreadSubscription) MessageReadLoop() {
 	for {
-		sMsgType, r, err := c.NextReader()
+		sMsgType, r, err := sub.conn.NextReader()
 		if err != nil {
-			c.Close()
-			quit <- true
+			sub.conn.Close()
+			sub.quit <- true
 			return
 		}
 
@@ -75,14 +90,14 @@ func messageReadLoop(c *websocket.Conn, send chan string, quit chan bool) {
 			log.Println("couldn't read timestamp", r)
 		}
 
-		send <- string(stamp)
+		sub.msg <- string(stamp)
 	}
 }
 
-func messageWriteLoop(userID, threadID uint64, db *gorm.DB, c *websocket.Conn, received chan string, quit chan bool) {
+func (sub MessageThreadSubscription) MessageWriteLoop(db *gorm.DB) {
 	for {
 		select {
-		case stamp := <-received:
+		case stamp := <-sub.msg:
 			sec, err := strconv.Atoi(stamp)
 			if err != nil {
 				log.Println("bad timestamp:", string(stamp))
@@ -90,20 +105,20 @@ func messageWriteLoop(userID, threadID uint64, db *gorm.DB, c *websocket.Conn, r
 
 			after := time.Unix(int64(sec), int64(0))
 
-			msgs, err := models.GetMessagesAfter(userID, threadID, after, db)
+			msgs, err := models.GetMessagesAfter(sub.user.ID, sub.thread.ID, after, db)
 			if err != nil {
-				c.WriteJSON(gin.H{"messages": []models.Message{}})
+				sub.conn.WriteJSON(gin.H{"messages": []models.Message{}})
 			}
 
-			if err := c.WriteJSON(gin.H{"messages": msgs}); err != nil {
+			if err := sub.conn.WriteJSON(gin.H{"messages": msgs}); err != nil {
 				return
 			}
 
-			err = models.MarkAllMessagesRead(userID, uint64(threadID), db)
+			err = models.MarkAllMessagesRead(sub.user.ID, sub.thread.ID, db)
 			if err != nil {
-				log.Println("Error marking messages read:", userID, threadID, err)
+				log.Println("Error marking messages read:", sub.user.ID, sub.thread.ID, err)
 			}
-		case <-quit:
+		case <-sub.quit:
 			return // kill the loop
 		}
 	}
