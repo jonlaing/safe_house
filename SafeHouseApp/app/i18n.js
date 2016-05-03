@@ -33,6 +33,10 @@ I18n.translations = {
     mediumTerm: 'Medium Term',
     longTerm: 'Long Term',
     nothing: 'There is nothing to show!',
+    about: 'About this user',
+    message: 'Message this person',
+    waiting: 'Awaiting confrimation',
+    accept: 'Accept conversation',
 
     submit: 'Submit',
     cancel: 'Cancel',

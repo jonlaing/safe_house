@@ -10,32 +10,13 @@ import React, {
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import I18n from './i18n';
 import Colors from './Colors';
+import formatter from './formatter';
 
 export default class MatchRow extends Component {
-  _capacity() {
-    if(this.props.capacity === 1) {
-      return `1 ${I18n.t('person')}`;
-    }
-
-    return `${this.props.capacity} ${I18n.t('people')}`;
-  }
-
-  _duration() {
-    switch(this.props.duration) {
-      case 2:
-        return I18n.t('mediumTerm');
-      case 3:
-        return I18n.t('longTerm');
-      default:
-        return I18n.t('shortTerm');
-    }
-  }
-
   render() {
     return (
-      <TouchableHighlight>
+      <TouchableHighlight onPress={this.props.onPress}>
         <View style={styles.container}>
           <View style={styles.matchData}>
             <View style={styles.userData}>
@@ -45,17 +26,17 @@ export default class MatchRow extends Component {
             <View style={styles.matchMeta}>
               <View style={styles.matchMetaItem}>
                 <Icon style={styles.matchMetaIcon} name="schedule" size={18} color="grey" />
-                <Text style={styles.matchMetaText}>{this._duration()}</Text>
+                <Text style={styles.matchMetaText}>{formatter.duration(this.props.duration)}</Text>
               </View>
               <View style={styles.matchMetaItem}>
                 <Icon style={styles.matchMetaIcon} name="people" size={18} color="grey" />
-                <Text style={styles.matchMetaText}>{this._capacity()}</Text>
+                <Text style={styles.matchMetaText}>{formatter.capacity(this.props.capacity)}</Text>
               </View>
             </View>
           </View>
           <View style={styles.distanceContainer}>
             <View style={styles.distance}>
-              <Text style={styles.distanceText}>{Math.round(this.props.distance * 10) / 10}</Text>
+              <Text style={styles.distanceText}>{formatter.distance(this.props.distance)}</Text>
               <Text style={styles.distanceUnit}>km</Text>
             </View>
           </View>
@@ -70,7 +51,12 @@ MatchRow.propTypes = {
   distance: React.PropTypes.number.isRequired,
   duration: React.PropTypes.number.isRequired,
   userID: React.PropTypes.number.isRequired,
-  username: React.PropTypes.string.isRequired
+  username: React.PropTypes.string.isRequired,
+  onPress: React.PropTypes.func
+};
+
+MatchRow.defaultProps = {
+  onPress: () => {}
 };
 
 const styles = StyleSheet.create({

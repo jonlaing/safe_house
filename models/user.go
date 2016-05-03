@@ -1,6 +1,7 @@
 package models
 
 import (
+	"math"
 	"regexp"
 	"safe_house/location"
 
@@ -121,6 +122,12 @@ func (u *User) GenCoordinates() error {
 	u.Longitude = address.Lng
 
 	return err
+}
+
+// GenDistance returns the distance of a user from a particular geolocation
+func (u *User) GenDistance(lat, long float64, unit location.Unit) {
+	deg := math.Sqrt(math.Pow(long-u.Longitude, 2) + math.Pow(lat-u.Latitude, 2))
+	u.Distance = location.NewDistancerFromDegrees(deg, unit)
 }
 
 // Validate checks to make sure all the user fields are appropriate values

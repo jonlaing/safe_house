@@ -48,19 +48,24 @@ func main() {
 	matches.Use(Auth())
 	{
 		matches.POST("/", MatchesList)
-		matches.GET("/:user_id", MatchesShow)
+		matches.POST("/:user_id", MatchesShow)
+	}
+
+	threads := r.Group("threads")
+	threads.Use(Auth())
+	{
+		threads.GET("/", MessageThreadIndex)
+		threads.POST("/", MessageThreadCreate)
+		threads.GET("/:user_id", MessageThreadShow)
+		threads.PATCH("/:thread_id/accept", MessageThreadStatus(models.MTOpened))
+		threads.PATCH("/:thread_id/close", MessageThreadStatus(models.MTClosed))
+		threads.PATCH("/:thread_id/block", MessageThreadStatus(models.MTBlocked))
+		threads.PATCH("/:thread_id/public_key", MessageThreadStatus(models.MTPubKeyChange))
 	}
 
 	messages := r.Group("messages")
 	messages.Use(Auth())
 	{
-		messages.GET("/", MessageThreadIndex)
-		messages.POST("/", MessageThreadCreate)
-		messages.GET("/:thread_id", MessageThreadShow)
-		messages.PATCH("/:thread_id/accept", MessageThreadStatus(models.MTOpened))
-		messages.PATCH("/:thread_id/close", MessageThreadStatus(models.MTClosed))
-		messages.PATCH("/:thread_id/block", MessageThreadStatus(models.MTBlocked))
-		messages.PATCH("/:thread_id/public_key", MessageThreadStatus(models.MTPubKeyChange))
 		messages.POST("/:thread_id", MessageCreate)
 		messages.GET("/:thread_id/subscribe", MessageThreadSubscribe)
 	}

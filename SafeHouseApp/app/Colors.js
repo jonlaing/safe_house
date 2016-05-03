@@ -1,5 +1,6 @@
 const Colors = {
-  action: '#00ff7f'
+  action: '#00ff7f',
+  lighterGrey: 'rgb(242,242,242)'
 };
 
 export default Colors;

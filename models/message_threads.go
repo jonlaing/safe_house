@@ -56,10 +56,52 @@ func GetMessageThreadsByUser(u User, db *gorm.DB) (mts []MessageThread, err erro
 	return
 }
 
+// GetMessageThreadByUserID finds the thread ID common between two users. To be frank, I'm
+// not totally satisfied with this, but it should work. Ideally, there won't be a large amount
+// of threads for any particular user, so this should still be reasonably performant. Any
+// suggestions to make this cleaner would be greatly appreciated.
+func GetMessageThreadByUserID(u User, otherID uint64, db *gorm.DB) (MessageThread, MessageThreadUser, error) {
+	// First get all message thread users for both users
+	var mtus []MessageThreadUser
+	err := db.Where("user_id IN (?)", []uint64{u.ID, otherID}).Find(&mtus).Error
+	if err != nil {
+		return MessageThread{}, MessageThreadUser{}, err
+	}
+
+	// User MessageThreadUsers
+	var umtus []MessageThreadUser
+	// Other MessageThreadUsers
+	var omtus []MessageThreadUser
+
+	// collect them into separate arrays
+	for _, mtu := range mtus {
+		if mtu.UserID == u.ID {
+			umtus = append(umtus, mtu)
+		}
+
+		if mtu.UserID == otherID {
+			omtus = append(omtus, mtu)
+		}
+	}
+
+	// find the one where they both have the same thread ID
+	for _, umtu := range umtus {
+		for _, omtu := range omtus {
+			// if two message thread users have the same id, then go fetch it
+			if umtu.ThreadID == omtu.ThreadID {
+				mt, err := GetMessageThreadByID(umtu.ThreadID, db)
+				return mt, omtu, err
+			}
+		}
+	}
+
+	return MessageThread{}, MessageThreadUser{}, ErrMessageThreadNotFound
+}
+
 // HasUser determines whether a particular user is part of a chat
 func (mt *MessageThread) HasUser(u User, db *gorm.DB) bool {
 	var count int
-	db.Table("message_thread_users").Where("user_id = ?", u.ID).Count(&count)
+	db.Table("message_thread_users").Where("thread_id = ?", mt.ID).Where("user_id = ?", u.ID).Count(&count)
 	return count > 0
 }
 

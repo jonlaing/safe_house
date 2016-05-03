@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@exponent/react-native-navigator": "^0.4.3",
+    "cryptico": "^1.0.2",
     "react": "^0.14.8",
     "react-native": "^0.24.1",
     "react-native-i18n": "0.0.8",

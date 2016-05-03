@@ -18,9 +18,8 @@ import (
 // messages.POST("/:thread_id", MessageCreate)
 
 type threadCreateFields struct {
-	MessageThread models.MessageThread `json:"message_thread" binding:"required"`
-	UserID        uint64               `json:"user_id" binding:"required"`
-	PublicKey     models.PublicKey     `json:"public_key" binding:"required"`
+	UserID    uint64           `json:"user_id" binding:"required"`
+	PublicKey models.PublicKey `json:"public_key" binding:"required"`
 }
 
 type threadStatusFields struct {
@@ -66,7 +65,7 @@ func MessageThreadCreate(c *gin.Context) {
 		return
 	}
 
-	mt := fields.MessageThread
+	mt := models.MessageThread{}
 
 	// Setting up the MessageThread
 	mt.UserID = user.ID
@@ -105,24 +104,13 @@ func MessageThreadShow(c *gin.Context) {
 		return
 	}
 
-	threadID, err := ParamID("thread_id", c)
+	otherID, err := ParamID("user_id", c)
 	if err != nil {
 		c.AbortWithError(http.StatusNotAcceptable, err)
 		return
 	}
 
-	mt, err := models.GetMessageThreadByID(threadID, db)
-	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
-		return
-	}
-
-	if !mt.HasUser(user, db) {
-		c.AbortWithError(http.StatusUnauthorized, models.ErrMessageThreadUser)
-		return
-	}
-
-	mtu, err := mt.GetOtherUser(user.ID, db)
+	mt, mtu, err := models.GetMessageThreadByUserID(user, otherID, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
@@ -203,6 +191,7 @@ func MessageCreate(c *gin.Context) {
 	}
 
 	message.ThreadID = mt.ID
+	message.IsMe = true
 	message.CreatedAt = time.Now()
 	message.UpdatedAt = time.Now()
 

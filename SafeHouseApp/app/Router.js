@@ -44,6 +44,15 @@ let Router = {
         return <MatchList token={token} navigator={navigator} />;
       }
     };
+  },
+
+  matchScreen(userID, token) {
+    return {
+      renderScene(navigator) {
+        let MatchScreen = require('./MatchScreen');
+        return <MatchScreen userID={userID} token={token} navigator={navigator} />;
+      }
+    };
   }
 };
 

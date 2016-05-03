@@ -39,7 +39,7 @@ export default class LoginScreen extends Component {
     Api.auth().login(this.state.username, this.state.password)
     .then(res => this._handleSuccess(res))
     .catch(err => {
-      console.log(err.response);
+      console.log(err);
       switch(err.response.status) {
         case 401:
           this.setState({passwordError: I18n.t('incorrectPassword')});
@@ -55,10 +55,8 @@ export default class LoginScreen extends Component {
   }
 
   _handleSuccess(res) {
-    console.log(res.token);
-    AsyncStorage.setItem('AUTH_TOKEN', res.token)
-    .then(() => this.props.navigator.replace(Router.matchesScreen(res.token)))
-    .catch((err) => console.log("couldn't set token:", err));
+    console.log(res);
+    this.props.navigator.push(Router.matchList(res.token));
   }
 
   render() {
@@ -110,7 +108,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 72,
-    backgroundColor: 'rgb(242,242,242)'
+    backgroundColor: Colors.lighterGrey
   },
   scroll: {
     flex: 1,

@@ -9,13 +9,16 @@ import React, {
   Text
 } from 'react-native';
 
+import ExNavigator from '@exponent/react-native-navigator';
+
 import Api from './Api';
 import I18n from './i18n';
+import Router from './Router';
 
 import MatchRow from './MatchRow';
 import NavBarMain from './NavBarMain';
 
-export default class MatchesScreen extends Component {
+export default class MatchList extends Component {
   constructor(props) {
     super(props);
 
@@ -50,6 +53,7 @@ export default class MatchesScreen extends Component {
         capacity={match.capacity}
         distance={match.distance}
         duration={match.duration}
+        onPress={() => this.props.navigator.push(Router.matchScreen(match.id, this.props.token))}
       />
     );
   }
@@ -88,6 +92,11 @@ export default class MatchesScreen extends Component {
   }
 }
 
+MatchList.propTypes = {
+  token: React.PropTypes.string.isRequired,
+  navigator: React.PropTypes.instanceOf(ExNavigator).isRequired
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -95,4 +104,4 @@ const styles = StyleSheet.create({
   }
 });
 
-module.exports = MatchesScreen;
+module.exports = MatchList;

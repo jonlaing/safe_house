@@ -13,11 +13,26 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Colors from './Colors';
 
 export default class IconButton extends Component {
+  _style() {
+    let style = {};
+    if(this.props.large === true) {
+      style.paddingVertical = 16;
+    }
+
+    if(this.props.primary === true) {
+      style.backgroundColor = Colors.action;
+    }
+
+    return [styles.actionButton, style];
+  }
+
   render() {
     return (
       <TouchableHighlight onPress={this.props.onPress}>
-        <View style={[styles.actionButton, this.props.primary === true ? styles.actionButtonMain : {}]}>
-          <Icon style={styles.actionIcon} name={this.props.name} size={this.props.iconSize} color={this.props.primary === true ? "white" : "grey"} />
+        <View style={this._style()}>
+          <View style={styles.actionIconContainer}>
+            <Icon style={styles.actionIcon} name={this.props.name} size={this.props.iconSize} color={this.props.primary === true ? "white" : "grey"} />
+          </View>
           <Text style={[styles.actionText, this.props.primary === true ? styles.actionTextMain : {}]}>{this.props.label}</Text>
         </View>
       </TouchableHighlight>
@@ -43,14 +58,17 @@ let styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 4
   },
-  actionButtonMain: {
-    backgroundColor: Colors.action
+  actionIconContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   actionIcon: {
     width: 24,
@@ -58,7 +76,7 @@ let styles = StyleSheet.create({
     marginHorizontal: 8
   },
   actionText: {
-    flex: 1,
+    flex: 2,
     fontSize: 18,
     color: 'grey'
   },

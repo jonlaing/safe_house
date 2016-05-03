@@ -20,6 +20,12 @@ type searchParams struct {
 	Page      int                    `json:"page"`
 }
 
+type matchShowFields struct {
+	Latitude  float64       `json:"latitude"`
+	Longitude float64       `json:"longitude"`
+	Unit      location.Unit `json:"unit"`
+}
+
 // MatchesList takes a JSON post and searches for matches based on those parameters.
 // It is a POST request for security purposes. Otherwise, geolocation data would be sent
 // as GET request variables and could possibly be sniffed on by nefarious types
@@ -61,11 +67,19 @@ func MatchesShow(c *gin.Context) {
 		return
 	}
 
+	var fields matchShowFields
+	if err := c.BindJSON(&fields); err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
 	user, err := models.GetUserByID(userID, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
+
+	user.GenDistance(fields.Latitude, fields.Longitude, fields.Unit)
 
 	c.JSON(http.StatusOK, user)
 }
