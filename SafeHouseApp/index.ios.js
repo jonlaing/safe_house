@@ -11,6 +11,7 @@ import React, {
   Text
 } from 'react-native';
 
+import EventEmitter from 'EventEmitter';
 import ExNavigator from '@exponent/react-native-navigator';
 
 import Router from './app/Router';
@@ -20,10 +21,16 @@ class SafeHouseApp extends Component {
   constructor(props) {
     super(props);
 
+    this.eventEmitter = new EventEmitter();
     this.state = { token: null, tokenFetched: false, userType: 0 };
   }
 
   componentDidMount() {
+    this._getUserProps();
+    this.eventEmitter.addListener('login', this._getUserProps.bind(this));
+  }
+
+  _getUserProps() {
     let messager = new Messager();
 
     AsyncStorage.multiGet(['AUTH_TOKEN', 'user_type'])
@@ -69,6 +76,7 @@ class SafeHouseApp extends Component {
         style={{ flex: 1 }}
         showNavigationBar={false}
         userType={this.state.userType}
+        eventEmitter={this.eventEmitter}
       />
     );
   }

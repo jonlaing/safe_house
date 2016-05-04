@@ -67,6 +67,7 @@ type User struct {
 	Longitude       float64            `json:"longitude"`
 	Profile         string             `json:"profile"`
 	Locale          string             `json:"locale"`
+	PublicKey       string             `json:"public_key"`
 	PasswordHash    []byte             `json:"-"`
 	Password        string             `json:"password" sql:"-"`
 	PasswordConfirm string             `json:"password_confirm" sql:"-"`
@@ -89,6 +90,17 @@ func GetUserByName(username string, db *gorm.DB) (user User, err error) {
 	}
 
 	return
+}
+
+// GetPublicKey gets a public key based on user id
+func GetPublicKey(userID uint64, db *gorm.DB) (string, error) {
+	var keys []string
+	err := db.Table("users").Where("id = ?", userID).Pluck("public_key", &keys).Error
+	if err == nil && len(keys) == 0 {
+		return "", ErrNoPublicKey
+	}
+
+	return keys[0], err
 }
 
 // Authenticate compares a password with the hash stored in the database

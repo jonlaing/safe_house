@@ -77,6 +77,11 @@ func GetMessageThreadByUserID(u User, otherID uint64, db *gorm.DB) (MessageThrea
 		return MessageThread{}, MessageThreadUser{}, err
 	}
 
+	other, err := GetUserByID(otherID, db)
+	if err != nil {
+		return MessageThread{}, MessageThreadUser{}, err
+	}
+
 	// User MessageThreadUsers
 	var umtus []MessageThreadUser
 	// Other MessageThreadUsers
@@ -99,6 +104,8 @@ func GetMessageThreadByUserID(u User, otherID uint64, db *gorm.DB) (MessageThrea
 			// if two message thread users have the same id, then go fetch it
 			if umtu.ThreadID == omtu.ThreadID {
 				mt, err := GetMessageThreadByID(umtu.ThreadID, db)
+				omtu.PublicKey = other.PublicKey
+
 				return mt, omtu, err
 			}
 		}
@@ -142,22 +149,23 @@ func (mt *MessageThread) CanChangeStatus(u User, status ThreadStatus, db *gorm.D
 }
 
 // NewMessageThreadUsers initializes new message thread users based on the current thread. This DOES NOT save them to the database.
-func (mt *MessageThread) NewMessageThreadUsers(fromID, toID uint64, publicKey string) (mtus []MessageThreadUser) {
+func (mt *MessageThread) NewMessageThreadUsers(from, to User) (mtus []MessageThreadUser) {
 	if mt.ID == 0 {
 		return
 	}
 
 	mtus = append(mtus, MessageThreadUser{
-		UserID:    fromID,
+		UserID:    from.ID,
 		ThreadID:  mt.ID,
-		PublicKey: publicKey,
+		PublicKey: from.PublicKey,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
 
 	mtus = append(mtus, MessageThreadUser{
-		UserID:    toID,
+		UserID:    to.ID,
 		ThreadID:  mt.ID,
+		PublicKey: to.PublicKey,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
@@ -189,33 +197,21 @@ func (mt *MessageThread) IsReady() bool {
 }
 
 // UpdateStatus updates the status of message thread
-func (mt *MessageThread) UpdateStatus(status ThreadStatus, u User, k string, db *gorm.DB) error {
-	if !mt.CanChangeStatus(u, status, db) {
+func (mt *MessageThread) UpdateStatus(status ThreadStatus, u *User, db *gorm.DB) error {
+	if !mt.CanChangeStatus(*u, status, db) {
 		return ErrMessageThreadStatus
 	}
 
-	if status == MTPubKeyChange {
-		mtu, err := mt.GetUser(u.ID, db)
-		if err != nil {
-			return err
-		}
+	// if status == MTPubKeyChange {
+	// 	mtu, err := mt.GetUser(u.ID, db)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		if err := mtu.UpdatePublicKey(k, mt, db); err != nil {
-			return err
-		}
-	}
-
-	if status == MTOpened {
-		mtu, err := mt.GetUser(u.ID, db)
-		if err != nil {
-			return err
-		}
-
-		mtu.PublicKey = k
-		if err := db.Save(&mtu).Error; err != nil {
-			return err
-		}
-	}
+	// 	if err := mtu.UpdatePublicKey(k, u, mt, db); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	mt.Status = status
 	mt.UpdatedAt = time.Now()

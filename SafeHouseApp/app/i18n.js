@@ -38,6 +38,10 @@ I18n.translations = {
     waiting: 'Awaiting confirmation',
     accept: 'Accept conversation',
 
+    // THREADS
+    noContact: 'No one has contacted you yet.\nCheck back soon.',
+    noMessages: "You haven't contacted anyone yet.\nFind matches and request to chat.",
+
     submit: 'Submit',
     cancel: 'Cancel',
     problem: 'There was a problem.',

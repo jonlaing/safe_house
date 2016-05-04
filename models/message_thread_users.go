@@ -11,7 +11,7 @@ type MessageThreadUser struct {
 	ID        uint64    `json:"id" gorm:"primary_key"`
 	ThreadID  uint64    `json:"thread_id" binding:"required"`
 	UserID    uint64    `json:"user_id"`
-	PublicKey string    `json:"public_key"`
+	PublicKey string    `json:"public_key" sql:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -46,42 +46,60 @@ func (mtu *MessageThreadUser) GetThread(db *gorm.DB) (mt MessageThread, err erro
 	return
 }
 
-// GetOtherUser returns the MessageThreadUser of the other user in the chat
-func (mtu *MessageThreadUser) GetOtherUser(db *gorm.DB) (other MessageThreadUser, err error) {
-	err = db.Where("thread_id = ? AND user_id != ?", mtu.ThreadID, mtu.UserID).Find(&other).Error
+// GetUser gets the associated user
+func (mtu *MessageThreadUser) GetUser(db *gorm.DB) (u User, err error) {
+	err = db.Where("id = ?", mtu.UserID).Find(&u).Error
 	return
 }
 
-// UpdatePublicKey updates a public key for a user, zeros out the other user's public key,
-// and updates the status of the message thread. The public key gets zeroed out, because
-// the other user needs to accept the chat again for security purposes. When the user accepts
-// the chat again, we will update their public key too.
-func (mtu *MessageThreadUser) UpdatePublicKey(k string, mt *MessageThread, db *gorm.DB) error {
-	other, err := mtu.GetOtherUser(db)
+// GetOtherUser returns the MessageThreadUser of the other user in the chat
+func (mtu *MessageThreadUser) GetOtherUser(db *gorm.DB) (other MessageThreadUser, err error) {
+	err = db.Where("thread_id = ? AND user_id != ?", mtu.ThreadID, mtu.UserID).Find(&other).Error
 	if err != nil {
-		return err
+		return
 	}
 
-	mtu.PublicKey = k
-	mtu.UpdatedAt = time.Now()
-
-	other.PublicKey = ""
-	other.UpdatedAt = time.Now()
-
-	mt.Status = MTPubKeyChange
-	mt.UpdatedAt = time.Now()
-
-	if err := db.Save(mtu).Error; err != nil {
-		return err
+	k, err := GetPublicKey(other.ID, db)
+	if err != nil {
+		return
 	}
 
-	if err := db.Save(&other).Error; err != nil {
-		return err
-	}
-
-	if err := db.Save(mt).Error; err != nil {
-		return err
-	}
-
-	return nil
+	other.PublicKey = k
+	return
 }
+
+// // UpdatePublicKey updates a public key for a user, zeros out the other user's public key,
+// // and updates the status of the message thread. The public key gets zeroed out, because
+// // the other user needs to accept the chat again for security purposes. When the user accepts
+// // the chat again, we will update their public key too.
+// func (mtu *MessageThreadUser) UpdatePublicKey(k string, u *User, mt *MessageThread, db *gorm.DB) error {
+// 	other, err := mtu.GetOtherUser(db)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	mtu.PublicKey = k
+// 	u.PublicKey = k
+// 	mtu.UpdatedAt = time.Now()
+// 	u.UpdatedAt = time.Now()
+
+// 	other.PublicKey = ""
+// 	other.UpdatedAt = time.Now()
+
+// 	mt.Status = MTPubKeyChange
+// 	mt.UpdatedAt = time.Now()
+
+// 	if err := db.Save(mtu).Error; err != nil {
+// 		return err
+// 	}
+
+// 	if err := db.Save(&other).Error; err != nil {
+// 		return err
+// 	}
+
+// 	if err := db.Save(mt).Error; err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }

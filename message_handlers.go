@@ -22,10 +22,6 @@ type threadCreateFields struct {
 	PublicKey string `json:"public_key" binding:"required"`
 }
 
-type threadStatusFields struct {
-	PublicKey string `json:"public_key" binding:"required"`
-}
-
 func MessageThreadIndex(c *gin.Context) {
 	db := GetDB(c)
 
@@ -79,7 +75,13 @@ func MessageThreadCreate(c *gin.Context) {
 	}
 
 	// Setting up the MessageThreadUser
-	mtus := mt.NewMessageThreadUsers(user.ID, fields.UserID, fields.PublicKey)
+	to, err := models.GetUserByID(fields.UserID, db)
+	if err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
+	mtus := mt.NewMessageThreadUsers(user, to)
 	if len(mtus) == 0 {
 		c.AbortWithError(http.StatusNotAcceptable, models.ErrMessageThreadNoID)
 		return
@@ -137,19 +139,13 @@ func MessageThreadStatus(status models.ThreadStatus) gin.HandlerFunc {
 			return
 		}
 
-		var fields threadStatusFields
-		if err := c.BindJSON(&fields); err != nil {
-			c.AbortWithError(http.StatusNotAcceptable, err)
-			return
-		}
-
 		mt, err := models.GetMessageThreadByID(threadID, db)
 		if err != nil {
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
 
-		if err := mt.UpdateStatus(status, user, fields.PublicKey, db); err != nil {
+		if err := mt.UpdateStatus(status, &user, db); err != nil {
 			c.AbortWithError(http.StatusNotAcceptable, err)
 			return
 		}

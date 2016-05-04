@@ -50,6 +50,7 @@ export default class MessageUserButton extends Component {
                       Api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
                       .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
                       .then(() => this.props.navigator.pop())
+                      .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))
                       .catch(err => console.log(err));
                     }
                     break;

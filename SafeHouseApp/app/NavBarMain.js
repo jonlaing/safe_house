@@ -4,7 +4,8 @@ import React, {
   Component,
   StyleSheet,
   TouchableHighlight,
-  View
+  View,
+  Text
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -42,6 +43,7 @@ export default class NavBarMain extends Component {
             <Icon name="speaker-notes" size={24} color="white" />
           </View>
         </TouchableHighlight>
+        <Text style={styles.header}>SafeHouse</Text>
         <TouchableHighlight style={styles.button} onPress={this.props.rightButtonPress}>
           <View style={styles.buttonInner}>
             <Icon name="settings" size={24} color="white" />
@@ -68,6 +70,13 @@ const styles = StyleSheet.create({
     shadowColor: 'black',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3
+  },
+  header: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: '200',
+    color: 'white',
   },
   button: {
     width: 64,

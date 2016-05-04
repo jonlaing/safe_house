@@ -55,6 +55,7 @@ export default class LoginScreen extends Component {
   }
 
   _handleSuccess(res) {
+    this.props.navigator.props.eventEmitter.emit('login');
     if(res.user.type === 2) {
       this.props.navigator.push(Router.threadList(res.token));
     } else {

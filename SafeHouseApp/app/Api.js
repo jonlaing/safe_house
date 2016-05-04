@@ -1,6 +1,8 @@
 /*global fetch, navigator */
 import React, {AsyncStorage} from 'react-native';
 
+import Messager from 'react-native';
+
 const _UTLookingFor = 1;
 const _UTHosting = 2;
 
@@ -48,6 +50,7 @@ let Api = {
   auth() {
     return {
       _completeLogin(res) {
+        console.log(res.user.type);
         return new Promise((resolve, reject) => {
           AsyncStorage.multiSet([['AUTH_TOKEN', res.token], ['username', res.user.username], ['user_type', res.user.type.toString()]])
           .then(() => resolve(res))
@@ -74,18 +77,24 @@ let Api = {
 
       _signUp(user) {
         return new Promise((resolve, reject) => {
-          fetch('http://localhost:4000/signup', {
-            headers: _headers(),
-            method: 'POST',
-            body: JSON.stringify(user)
-          })
-          .then(resp => _processJSON(resp))
-          .then(resp => Api.auth()._completeLogin(resp))
-          .then(resp => resolve(resp))
-          .catch(err => {
-            err.response.json()
-            .then(d => reject(d))
-            .catch(() => reject(err));
+          let messager = new Messager();
+          messager.getKeys().then((keys) => {
+
+            user.public_key = keys.pub;
+
+            fetch('http://localhost:4000/signup', {
+              headers: _headers(),
+              method: 'POST',
+              body: JSON.stringify(user)
+            })
+            .then(resp => _processJSON(resp))
+            .then(resp => Api.auth()._completeLogin(resp))
+            .then(resp => resolve(resp))
+            .catch(err => {
+              err.response.json()
+              .then(d => reject(d))
+              .catch(() => reject(err));
+            });
           });
         });
       },

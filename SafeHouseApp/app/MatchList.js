@@ -2,6 +2,7 @@
 
 import React, {
   Component,
+  ActivityIndicatorIOS,
   StyleSheet,
   ListView,
   RefreshControl,
@@ -70,10 +71,19 @@ export default class MatchList extends Component {
     );
   }
 
+  _loading() {
+    if(!this.state.fetched) {
+      return <ActivityIndicatorIOS style={{flex: 1}} animating={true} size="large" />;
+    }
+
+    return <View/>;
+  }
+
   render() {
     return (
       <View style={styles.container}>
         {this._nothing()}
+        {this._loading()}
         <ListView
           dataSource={this.state.ds}
           renderRow={this._renderRow.bind(this)}

@@ -10,6 +10,7 @@ import React, {
 
 import Api from './Api';
 import Router from './Router';
+import I18n from './i18n';
 
 import NavBarMain from './NavBarMain';
 import ThreadRow from './ThreadRow';
@@ -24,6 +25,7 @@ export default class ThreadList extends Component {
 
   componentDidMount() {
     this._getThreads();
+    this.props.navigator.props.eventEmitter.addListener('chat-accept', this._getThreads.bind(this));
   }
 
   _getThreads() {
@@ -67,9 +69,22 @@ export default class ThreadList extends Component {
     };
   }
 
+  nothing() {
+    if(this.state.threads.length < 1) {
+      if(this.props.navigator.props.userType === 2) {
+        return <Text style={styles.nothing}>{I18n.t('noContact')}</Text>;
+      } else {
+        return <Text style={styles.nothing}>{I18n.t('noMessages')}</Text>;
+      }
+    }
+
+    return <View/>;
+  }
+
   render() {
     return (
       <View style={styles.container}>
+        {this.nothing()}
         <ListView
           dataSource={this.state.ds}
           renderRow={this._renderRow.bind(this)}
@@ -90,6 +105,11 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     paddingTop: 80
+  },
+  nothing: {
+    flex: 1,
+    textAlign: 'center',
+    color: 'grey'
   }
 });
 

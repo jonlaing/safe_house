@@ -11,6 +11,8 @@ import React, {
 import Api from './Api';
 import Router from './Router';
 
+import NavBarMain from './NavBarMain';
+
 export default class SettingsScreen extends Component {
   handleLogout() {
     Api.auth().logout()
@@ -24,6 +26,11 @@ export default class SettingsScreen extends Component {
         <TouchableHighlight onPress={this.handleLogout.bind(this)}>
           <Text>Logout</Text>
         </TouchableHighlight>
+        <NavBarMain
+          userType={this.props.navigator.props.userType}
+          leftButtonPress={() => this.props.navigator.replace(Router.matchList(this.props.token)) }
+          middleButtonPress={() => this.props.navigator.replace(Router.threadList(this.props.token)) }
+        />
       </View>
     );
   }
