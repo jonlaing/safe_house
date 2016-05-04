@@ -47,8 +47,9 @@ export default class MessageUserButton extends Component {
                     // if we're looking at the user who started the chat
                     // then we can accept the request
                     if(this.state.threadUserID === this.props.userID) {
-                      Api.messages(this.props.token).accept(this.messager.publicKey())
+                      Api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
                       .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
+                      .then(() => this.props.navigator.pop())
                       .catch(err => console.log(err));
                     }
                     break;
@@ -97,7 +98,8 @@ export default class MessageUserButton extends Component {
 
 MessageUserButton.propTypes = {
   token: React.PropTypes.string.isRequired,
-  userID: React.PropTypes.number.isRequired
+  userID: React.PropTypes.number.isRequired,
+  threadID: React.PropTypes.number
 };
 
 module.exports = MessageUserButton;

@@ -33,11 +33,13 @@ func init() {
 
 // MessageThread holds a chat and public keys for a conversation
 type MessageThread struct {
-	ID        uint64       `json:"id" gorm:"primary_key"`
-	UserID    uint64       `json:"user_id"` // The user who requested the chat
-	Status    ThreadStatus `json:"status"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+	ID          uint64       `json:"id" gorm:"primary_key"`
+	UserID      uint64       `json:"user_id"` // The user who requested the chat
+	Status      ThreadStatus `json:"status"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+	User        User         `json:"user" sql:"-"`
+	LastMessage Message      `json:"last_message" sql:"-"`
 }
 
 // GetMessageThreadByID gets the thread based on id
@@ -48,11 +50,18 @@ func GetMessageThreadByID(threadID uint64, db *gorm.DB) (mt MessageThread, err e
 
 // GetMessageThreadsByUser gets all the threads associated with a user
 func GetMessageThreadsByUser(u User, db *gorm.DB) (mts []MessageThread, err error) {
-	err = db.Joins("left join message_thread_users on message_thread_users.thread_id = message_thread.id").
+	err = db.Joins("left join message_thread_users on message_thread_users.thread_id = message_threads.id").
 		Where("message_thread_users.user_id = ?", u.ID).
 		Where("message_threads.status IN (?)", visibleThreadStatuses). // no blocked chats
+		Order("updated_at DESC").
 		Find(&mts).
 		Error
+
+	for k := range mts {
+		mts[k].GetLastMessage(u.ID, db)
+		mts[k].GetRelatedUser(u.ID, db)
+	}
+
 	return
 }
 
@@ -191,11 +200,41 @@ func (mt *MessageThread) UpdateStatus(status ThreadStatus, u User, k string, db 
 			return err
 		}
 
-		return mtu.UpdatePublicKey(k, mt, db)
+		if err := mtu.UpdatePublicKey(k, mt, db); err != nil {
+			return err
+		}
+	}
+
+	if status == MTOpened {
+		mtu, err := mt.GetUser(u.ID, db)
+		if err != nil {
+			return err
+		}
+
+		mtu.PublicKey = k
+		if err := db.Save(&mtu).Error; err != nil {
+			return err
+		}
 	}
 
 	mt.Status = status
 	mt.UpdatedAt = time.Now()
 
 	return db.Save(&mt).Error
+}
+
+// GetLastMessage fills in the last message of a message thread
+func (mt *MessageThread) GetLastMessage(userID uint64, db *gorm.DB) error {
+	err := db.Where("thread_id = ?", mt.ID).Order("created_at DESC").Find(&mt.LastMessage).Error
+	mt.LastMessage.IsMe = mt.LastMessage.UserID == userID
+	return err
+}
+
+// GetRelatedUser gets the other user of a message thread
+func (mt *MessageThread) GetRelatedUser(userID uint64, db *gorm.DB) error {
+	return db.Joins("left join message_thread_users on message_thread_users.user_id = users.id").
+		Where("message_thread_users.thread_id = ?", mt.ID).
+		Where("message_thread_users.user_id != ?", userID).
+		Find(&mt.User).
+		Error
 }

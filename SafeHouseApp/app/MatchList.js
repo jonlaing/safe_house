@@ -86,7 +86,11 @@ export default class MatchList extends Component {
             />
           }
         />
-        <NavBarMain />
+        <NavBarMain
+          userType={this.props.navigator.props.userType}
+          middleButtonPress={() => this.props.navigator.replace(Router.threadList(this.props.token)) }
+          rightButtonPress={() => this.props.navigator.replace(Router.settingsScreen(this.props.token)) }
+        />
       </View>
     );
   }

@@ -49,7 +49,7 @@ let Api = {
     return {
       _completeLogin(res) {
         return new Promise((resolve, reject) => {
-          AsyncStorage.multiSet([['AUTH_TOKEN', res.token], ['username', res.user.username]])
+          AsyncStorage.multiSet([['AUTH_TOKEN', res.token], ['username', res.user.username], ['user_type', res.user.type.toString()]])
           .then(() => resolve(res))
           .catch(err => reject(err));
         });
@@ -69,7 +69,7 @@ let Api = {
       },
 
       logout() {
-        return AsyncStorage.multiRemove(['AUTH_TOKEN', 'username', 'PRIV_KEY']);
+        return AsyncStorage.multiRemove(['AUTH_TOKEN', 'username', 'user_type', 'PRIV_KEY', 'PUB_KEY']);
       },
 
       _signUp(user) {
@@ -175,7 +175,7 @@ let Api = {
   messages(token) {
     return {
       threads() {
-        return fetch(`http://localhost:4000/messages`, { headers: _headers(token) })
+        return fetch(`http://localhost:4000/threads`, { headers: _headers(token) })
         .then(res => _processJSON(res));
       },
 
@@ -196,13 +196,13 @@ let Api = {
         .then(res => _processJSON(res));
       },
 
-      accept(threadID, messager) {
+      accept(threadID, pubKey) {
         return fetch(`http://localhost:4000/threads/${threadID}/accept`, {
           headers: _headers(token),
           body: JSON.stringify({
-            publicKey: messager.publicKey()
+            public_key: pubKey
           }),
-          method: 'POST'
+          method: 'PATCH'
         })
         .then(res => _processJSON(res));
       },

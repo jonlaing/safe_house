@@ -20,21 +20,39 @@ class SafeHouseApp extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { token: null, tokenFetched: false };
+    this.state = { token: null, tokenFetched: false, userType: 0 };
   }
 
   componentDidMount() {
     let messager = new Messager();
 
-    AsyncStorage.getItem('AUTH_TOKEN')
-    .then(tok => this.setState({token: tok, tokenFetched: true}))
+    AsyncStorage.multiGet(['AUTH_TOKEN', 'user_type'])
+    .then(stores => {
+      let tok, uType;
+      stores.map((v, k, store) => {
+        if(store[k][0] === 'AUTH_TOKEN') {
+          tok = store[k][1];
+        }
+
+        if(store[k][0] === 'user_type') {
+          uType = store[k][1];
+        }
+      });
+
+      this.setState({token: tok, tokenFetched: true, userType: parseInt(uType)});
+    })
     .then(() => messager.getKeys()) // generate keys if they're not already there
     .catch((err) => { console.log(err); this.setState({tokenFetched: true}); });
   }
 
   _initialRoute() {
-    if(this.state.token !== null && this.state.tokenFetched === true) {
+    console.log(this.state.userType);
+    if(this.state.token !== null && this.state.tokenFetched === true && this.state.userType === 1) {
       return Router.matchList(this.state.token);
+    }
+
+    if(this.state.token !== null && this.state.tokenFetched === true && this.state.userType === 2) {
+      return Router.threadList(this.state.token);
     }
 
     return Router.welcomeScreen();
@@ -50,6 +68,7 @@ class SafeHouseApp extends Component {
         initialRoute={this._initialRoute()}
         style={{ flex: 1 }}
         showNavigationBar={false}
+        userType={this.state.userType}
       />
     );
   }

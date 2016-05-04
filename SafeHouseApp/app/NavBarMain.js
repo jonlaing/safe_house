@@ -13,13 +13,30 @@ import Colors from './Colors';
 
 export default class NavBarMain extends Component {
   render() {
+    if(this.props.userType !== 2) {
+      return (
+        <View style={[styles.container, this.props.style]}>
+          <TouchableHighlight style={styles.button} onPress={this.props.leftButtonPress}>
+            <View style={styles.buttonInner}>
+              <Icon name="search" size={30} color="white" />
+            </View>
+          </TouchableHighlight>
+          <TouchableHighlight style={styles.button} onPress={this.props.middleButtonPress}>
+            <View style={styles.buttonInner}>
+              <Icon name="speaker-notes" size={24} color="white" />
+            </View>
+          </TouchableHighlight>
+          <TouchableHighlight style={styles.button} onPress={this.props.rightButtonPress}>
+            <View style={styles.buttonInner}>
+              <Icon name="settings" size={24} color="white" />
+            </View>
+          </TouchableHighlight>
+        </View>
+      );
+    }
+
     return (
       <View style={[styles.container, this.props.style]}>
-        <TouchableHighlight style={styles.button} onPress={this.props.leftButtonPress}>
-          <View style={styles.buttonInner}>
-            <Icon name="search" size={30} color="white" />
-          </View>
-        </TouchableHighlight>
         <TouchableHighlight style={styles.button} onPress={this.props.middleButtonPress}>
           <View style={styles.buttonInner}>
             <Icon name="speaker-notes" size={24} color="white" />

@@ -46,11 +46,29 @@ let Router = {
     };
   },
 
-  matchScreen(userID, token) {
+  matchScreen(userID, token, threadID = null) {
     return {
       renderScene(navigator) {
         let MatchScreen = require('./MatchScreen');
-        return <MatchScreen userID={userID} token={token} navigator={navigator} />;
+        return <MatchScreen userID={userID} token={token} threadID={threadID} navigator={navigator} />;
+      }
+    };
+  },
+
+  threadList(token) {
+    return {
+      renderScene(navigator) {
+        let ThreadList = require('./ThreadList');
+        return <ThreadList token={token} navigator={navigator} />;
+      }
+    };
+  },
+
+  settingsScreen(token) {
+    return {
+      renderScene(navigator) {
+        let SettingsScreen = require('./SettingsScreen');
+        return <SettingsScreen token={token} navigator={navigator} />;
       }
     };
   }

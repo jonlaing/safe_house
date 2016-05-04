@@ -44,7 +44,7 @@ export default class MatchScreen extends Component {
     let button;
 
     if(this.state.user.id !== undefined) {
-      button = <MessageUserButton token={this.props.token} userID={this.state.user.id} />;
+      button = <MessageUserButton token={this.props.token} userID={this.state.user.id} threadID={this.props.threadID} />;
     } else {
       button = <View />;
     }

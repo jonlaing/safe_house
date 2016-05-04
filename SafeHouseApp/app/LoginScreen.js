@@ -55,8 +55,11 @@ export default class LoginScreen extends Component {
   }
 
   _handleSuccess(res) {
-    console.log(res);
-    this.props.navigator.push(Router.matchList(res.token));
+    if(res.user.type === 2) {
+      this.props.navigator.push(Router.threadList(res.token));
+    } else {
+      this.props.navigator.push(Router.matchList(res.token));
+    }
   }
 
   render() {
