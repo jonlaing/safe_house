@@ -14,6 +14,7 @@ import React, {
 import ExNavigator from '@exponent/react-native-navigator';
 
 import Router from './app/Router';
+import Messager from './app/Messager';
 
 class SafeHouseApp extends Component {
   constructor(props) {
@@ -23,9 +24,11 @@ class SafeHouseApp extends Component {
   }
 
   componentDidMount() {
-    // AsyncStorage.removeItem('AUTH_TOKEN');
+    let messager = new Messager();
+
     AsyncStorage.getItem('AUTH_TOKEN')
     .then(tok => this.setState({token: tok, tokenFetched: true}))
+    .then(() => messager.getKeys()) // generate keys if they're not already there
     .catch((err) => { console.log(err); this.setState({tokenFetched: true}); });
   }
 

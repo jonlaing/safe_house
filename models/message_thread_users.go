@@ -6,14 +6,12 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type PublicKey []byte
-
 // MessageThreadUser is a joining table between MessageThread, User, and Chat
 type MessageThreadUser struct {
 	ID        uint64    `json:"id" gorm:"primary_key"`
 	ThreadID  uint64    `json:"thread_id" binding:"required"`
 	UserID    uint64    `json:"user_id"`
-	PublicKey PublicKey `json:"public_key"`
+	PublicKey string    `json:"public_key"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -58,7 +56,7 @@ func (mtu *MessageThreadUser) GetOtherUser(db *gorm.DB) (other MessageThreadUser
 // and updates the status of the message thread. The public key gets zeroed out, because
 // the other user needs to accept the chat again for security purposes. When the user accepts
 // the chat again, we will update their public key too.
-func (mtu *MessageThreadUser) UpdatePublicKey(k PublicKey, mt *MessageThread, db *gorm.DB) error {
+func (mtu *MessageThreadUser) UpdatePublicKey(k string, mt *MessageThread, db *gorm.DB) error {
 	other, err := mtu.GetOtherUser(db)
 	if err != nil {
 		return err
@@ -67,7 +65,7 @@ func (mtu *MessageThreadUser) UpdatePublicKey(k PublicKey, mt *MessageThread, db
 	mtu.PublicKey = k
 	mtu.UpdatedAt = time.Now()
 
-	other.PublicKey = PublicKey{} // zero it out
+	other.PublicKey = ""
 	other.UpdatedAt = time.Now()
 
 	mt.Status = MTPubKeyChange

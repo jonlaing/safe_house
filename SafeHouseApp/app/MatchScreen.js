@@ -41,6 +41,14 @@ export default class MatchScreen extends Component {
       return <View/>; // TODO: make better loader
     }
 
+    let button;
+
+    if(this.state.user.id !== undefined) {
+      button = <MessageUserButton token={this.props.token} userID={this.state.user.id} />;
+    } else {
+      button = <View />;
+    }
+
     return (
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -68,7 +76,7 @@ export default class MatchScreen extends Component {
           </View>
         </ScrollView>
         <View style={styles.action}>
-          <MessageUserButton token={this.props.token} userID={this.state.user.id} />
+          {button}
         </View>
         <NavBar
           title={this.state.user.username}

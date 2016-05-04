@@ -1,64 +1,80 @@
 'use strict';
 
-import {
+import React, {
   AsyncStorage
 } from 'react-native';
 
-import cryptico from 'cryptico';
+import keypair from 'keypair';
 
-const privKey = 'PRIV_KEY';
+const privKeyIndex = 'PRIV_KEY';
+const pubKeyIndex = 'PUB_KEY';
 
-class Messager {
+export default class Messager {
   constructor(username, theirKey = null, theirSig = null) {
-    this.key = null;
+    this.username = username;
+    this.privKey = null;
+    this.pubKey = null;
     this.theirKey = theirKey;
     this.theirSig = theirSig;
+  }
 
-    this.getKey().then(key => this.key = key)
-    .catch(() => {
-      this.genKey(username).then(key => this.key = key)
-      .catch(err => { throw err; });
+  setTheirKey(key) {
+    this.theirKey = key;
+  }
+
+  getKeys() {
+    return new Promise((resolve, reject) => {
+      AsyncStorage.multiGet([privKeyIndex, pubKeyIndex])
+      .then((keys) => {
+        let privKey, pubKey;
+        keys.map((k, i, key) => {
+          if(key[i][0] === privKeyIndex) {
+            privKey = key[i][1];
+          }
+
+          if(key[i][0] === pubKeyIndex) {
+            pubKey = key[i][1];
+          }
+        });
+
+        if(privKey === undefined || pubKey === undefined || privKey === null || pubKey === null) {
+          throw new Error("Undefined keys");
+        }
+
+        this.privKey = privKey;
+        this.pubKey = pubKey;
+
+        resolve({priv: privKey, pub: pubKey});
+      })
+      .catch(() => {
+        this.genKeys().then((keys) => resolve(keys))
+        .catch(err => reject(err));
+      });
     });
   }
 
-  getKey() {
-    return AsyncStorage.getItem(privKey);
-  }
+  genKeys() {
+    let keys = keypair();
+    console.log(keys);
 
-  genKey(username) {
-    let priv = cryptico.generateRSAKey(username, 1024);
-
-    return AsyncStorage.setItem(privKey, priv);
+    return new Promise((resolve, reject) => {
+      AsyncStorage.multiSet([[privKeyIndex, keys.private], [pubKeyIndex, keys.public]])
+      .then(() => { this.privKey = keys.private; this.pubKey = keys.public; })
+      .then(() => resolve({priv: keys.private, pub: keys.public}))
+      .catch(err => reject(err));
+    });
   }
 
   publicKey() {
-    if(this.publicKey === undefined) {
-      this.publicKey = cryptico.publicKeyString(this.key);
+    if(this.pubKey === undefined || this.pubKey === null) {
+      throw new Error("Public Key not set");
     }
 
-    return this.publicKey;
+    return this.pubKey;
   }
 
   _encrypt(message, key) {
-    return new Promise((resolve, reject) => {
-      if(this.key === null) {
-        reject(new Error("Key has not been generated"));
-        return;
-      }
-
-      if(this.theirKey === null) {
-        reject(new Error("Unknown public key"));
-      }
-
-      let encrypted = cryptico.encrypt(message, key, this.key);
-
-      if(encrypted.status !== "success") {
-        reject(new Error("Couldn't encrypt message with provided keys"));
-        return;
-      }
-
-      resolve(encrypted.cipher);
-    });
+    return pgp.encrypt({data: message, publicKeys: key, privateKeys: this.privKey});
   }
 
   encrypt(message) {
@@ -66,36 +82,27 @@ class Messager {
   }
 
   encryptForMe(message) {
-    return this._encrypt(message, this.key);
+    return this._encrypt(message, this.pubKey);
   }
 
   decrypt(cipher) {
     return new Promise((resolve, reject) => {
-      if(this.key == null) {
+      if(this.privKey == null) {
         reject(new Error("Key has not been generated"));
         return;
       }
 
-      let decrypted = cryptico.decrypt(cipher, this.key);
+      pgp.decrypt({message: cipher, privateKey: this.key})
+      .then((result) => {
+        if(this.theirKey === null && result.signatures[0].valid) {
+          this.theirKey = result.signatures[0].keyid;
+        }
 
-      if(decrypted.status !== "success") {
-        reject(new Error("Couldn't decrypt message with provided key"));
-        return;
-      }
-
-      if(this.theirKey === null) {
-        this.theirKey = decrypted.publicKeyString;
-      }
-
-      if(this.theirSig === null) {
-        this.theirSig = decrypted.signature;
-      }
-
-      resolve(decrypted.plaintext);
+        resolve(result.data);
+      })
+      .catch(err => reject(err));
     });
   }
 }
-
-export default Messager;
 
 module.exports = Messager;

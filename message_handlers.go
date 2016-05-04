@@ -18,12 +18,12 @@ import (
 // messages.POST("/:thread_id", MessageCreate)
 
 type threadCreateFields struct {
-	UserID    uint64           `json:"user_id" binding:"required"`
-	PublicKey models.PublicKey `json:"public_key" binding:"required"`
+	UserID    uint64 `json:"user_id" binding:"required"`
+	PublicKey string `json:"public_key" binding:"required"`
 }
 
 type threadStatusFields struct {
-	PublicKey models.PublicKey `json:"public_key" binding:"required"`
+	PublicKey string `json:"public_key" binding:"required"`
 }
 
 func MessageThreadIndex(c *gin.Context) {

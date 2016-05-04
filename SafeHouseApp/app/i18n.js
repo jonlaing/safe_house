@@ -35,7 +35,7 @@ I18n.translations = {
     nothing: 'There is nothing to show!',
     about: 'About this user',
     message: 'Message this person',
-    waiting: 'Awaiting confrimation',
+    waiting: 'Awaiting confirmation',
     accept: 'Accept conversation',
 
     submit: 'Submit',

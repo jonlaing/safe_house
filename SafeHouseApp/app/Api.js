@@ -171,24 +171,25 @@ let Api = {
       }
     };
   },
+
   messages(token) {
     return {
       threads() {
-        fetch(`http://localhost:4000/messages`, { headers: _headers(token) })
+        return fetch(`http://localhost:4000/messages`, { headers: _headers(token) })
         .then(res => _processJSON(res));
       },
 
       thread(userID) {
-        fetch(`http://localhost:4000/threads/${userID}`, { headers: _headers(token) })
+        return fetch(`http://localhost:4000/threads/${userID}`, { headers: _headers(token) })
         .then(res => _processJSON(res));
       },
 
-      request(userID, messager) {
-        fetch(`http://localhost:4000/threads`, {
+      request(userID, pubKey) {
+        return fetch(`http://localhost:4000/threads`, {
           headers: _headers(token),
           body: JSON.stringify({
-            userID: userID,
-            publicKey: messager.publicKey()
+            user_id: userID,
+            public_key: pubKey
           }),
           method: 'POST'
         })
@@ -196,7 +197,7 @@ let Api = {
       },
 
       accept(threadID, messager) {
-        fetch(`http://localhost:4000/threads/${threadID}/accept`, {
+        return fetch(`http://localhost:4000/threads/${threadID}/accept`, {
           headers: _headers(token),
           body: JSON.stringify({
             publicKey: messager.publicKey()
@@ -210,7 +211,7 @@ let Api = {
         let encryptedMessage = messager.encrypt(text);
         let senderCopyMessage = messager.encryptForMe(text);
 
-        fetch(`http://localhost:4000/messages/${threadID}`, {
+        return fetch(`http://localhost:4000/messages/${threadID}`, {
           headers: _headers(token),
           body: JSON.stringify({
             encrypted_message: encryptedMessage,

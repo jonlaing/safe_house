@@ -133,7 +133,7 @@ func (mt *MessageThread) CanChangeStatus(u User, status ThreadStatus, db *gorm.D
 }
 
 // NewMessageThreadUsers initializes new message thread users based on the current thread. This DOES NOT save them to the database.
-func (mt *MessageThread) NewMessageThreadUsers(fromID, toID uint64, publicKey PublicKey) (mtus []MessageThreadUser) {
+func (mt *MessageThread) NewMessageThreadUsers(fromID, toID uint64, publicKey string) (mtus []MessageThreadUser) {
 	if mt.ID == 0 {
 		return
 	}
@@ -180,7 +180,7 @@ func (mt *MessageThread) IsReady() bool {
 }
 
 // UpdateStatus updates the status of message thread
-func (mt *MessageThread) UpdateStatus(status ThreadStatus, u User, k PublicKey, db *gorm.DB) error {
+func (mt *MessageThread) UpdateStatus(status ThreadStatus, u User, k string, db *gorm.DB) error {
 	if !mt.CanChangeStatus(u, status, db) {
 		return ErrMessageThreadStatus
 	}

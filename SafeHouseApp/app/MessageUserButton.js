@@ -15,39 +15,41 @@ import IconButton from './IconButton';
 export default class MessageUserButton extends Component {
   constructor(props) {
     super(props);
+    this.messager = new Messager();
 
     this.state = { status: 0, threadUserID: 0 };
   }
 
   componentDidMount() {
-    AsyncStorage.getItem('username')
-    .then(un => this.messager = new Messager(un))
-    .catch(err => console.log(err));
+    this.messager.getKeys().catch(err => console.log(err));
+    this._fetchStatus();
   }
 
   _fetchStatus() {
-    Api.messages(this.props.token).get(this.props.userID)
+    Api.messages(this.props.token).thread(this.props.userID)
     .then(res => this.setState({
       status: res.message_thread.status,
       threadID: res.message_thread.id,
       threadUserID: res.message_thread.user_id
     }))
     .then(() => console.log(this.state.status, this.state.threadID, this.state.threadUserID))
-    .catch(err => console.log(err));
+    .catch(err => console.log(err)); // the thread probably just doesn't exist...
   }
 
   _handleSubmit() {
     switch(this.state.status) {
             case 0:
-                    Api.messages(this.props.token).request(this.props.userID, this.messager)
-                    .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}));
+                    Api.messages(this.props.token).request(this.props.userID, this.messager.publicKey())
+                    .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
+                    .catch(err => console.log(err));
                     break;
             case 1:
                     // if we're looking at the user who started the chat
                     // then we can accept the request
                     if(this.state.threadUserID === this.props.userID) {
-                      Api.messages(this.props.token).accept(this.messager)
-                      .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}));
+                      Api.messages(this.props.token).accept(this.messager.publicKey())
+                      .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
+                      .catch(err => console.log(err));
                     }
                     break;
             default:
@@ -83,7 +85,7 @@ export default class MessageUserButton extends Component {
                       <IconButton
                         name="schedule"
                         label={I18n.t('waiting')}
-                        primary={true}
+                        primary={false}
                         large={true}
                         onPress={this._handleSubmit.bind(this)} />
                     );
