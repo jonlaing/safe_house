@@ -8,6 +8,8 @@ var (
 	ErrNoPassword    = errors.New("Password hash couldn't be generated because the password was blank")
 	ErrNoPublicKey   = errors.New("PublicKey wasn't set for this user")
 
+	ErrGeolocation = errors.New("Couldn't calculate location of user based on PostalCode")
+
 	ErrUserBlocked           = errors.New("You are blocked from messaging this thread")
 	ErrMessageThreadNoID     = errors.New("The specified MessageThread does not have an ID. Make sure it's been saved to the DB")
 	ErrMessageThreadStatus   = errors.New("You can't change the status of this message thread")

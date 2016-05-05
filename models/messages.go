@@ -11,8 +11,8 @@ type Message struct {
 	ID                uint64    `json:"id" gorm:"primary_key"`
 	UserID            uint64    `json:"user_id"`
 	ThreadID          uint64    `json:"thread_id"`
-	EncryptedMessage  []byte    `json:"encrypted_message" binding:"required"`   // Encrypted with the recipient's public key
-	SenderCopyMessage []byte    `json:"sender_copy_message" binding:"required"` // Encryped with the sender's public key
+	EncryptedMessage  string    `json:"encrypted_message" binding:"required"`   // Encrypted with the recipient's public key
+	SenderCopyMessage string    `json:"sender_copy_message" binding:"required"` // Encryped with the sender's public key
 	Read              bool      `json:"-"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`

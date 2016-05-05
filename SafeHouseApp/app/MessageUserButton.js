@@ -40,7 +40,7 @@ export default class MessageUserButton extends Component {
     switch(this.state.status) {
             case 0:
                     Api.messages(this.props.token).request(this.props.userID, this.messager.publicKey())
-                    .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
+                    .then(res => { console.log(res); this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}); })
                     .catch(err => console.log(err));
                     break;
             case 1:

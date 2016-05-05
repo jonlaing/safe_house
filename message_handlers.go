@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 // messages.GET("/", MessageThreadIndex)
@@ -106,19 +107,35 @@ func MessageThreadShow(c *gin.Context) {
 		return
 	}
 
-	otherID, err := ParamID("user_id", c)
+	threadID, err := ParamID("thread_id", c)
 	if err != nil {
 		c.AbortWithError(http.StatusNotAcceptable, err)
 		return
 	}
 
-	mt, mtu, err := models.GetMessageThreadByUserID(user, otherID, db)
+	mt, err := models.GetMessageThreadByID(threadID, db)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message_thread": mt, "other_user": mtu})
+	err = mt.GetRelatedUser(user.ID, db)
+	if err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
+	// If we don't find any messages, that's fine, because there might
+	// not be any messages in this thread. If it's a different error,
+	// we need to abort.
+	ms, err := mt.GetMessages(user.ID, db)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+		// Continue if the records just weren't found
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message_thread": mt, "messages": ms})
 }
 
 // MessageThreadStatus updates the user status. It's intended to be used in multiple
@@ -187,6 +204,7 @@ func MessageCreate(c *gin.Context) {
 	}
 
 	message.ThreadID = mt.ID
+	message.UserID = user.ID
 	message.IsMe = true
 	message.CreatedAt = time.Now()
 	message.UpdatedAt = time.Now()

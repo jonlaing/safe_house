@@ -67,7 +67,7 @@ type User struct {
 	Longitude       float64            `json:"longitude"`
 	Profile         string             `json:"profile"`
 	Locale          string             `json:"locale"`
-	PublicKey       string             `json:"public_key"`
+	PublicKey       string             `json:"public_key" binding:"required"`
 	PasswordHash    []byte             `json:"-"`
 	Password        string             `json:"password" sql:"-"`
 	PasswordConfirm string             `json:"password_confirm" sql:"-"`
@@ -129,11 +129,18 @@ func (u *User) GenPasswordHash() error {
 // GenCoordinates converts a postal code into coordinates
 func (u *User) GenCoordinates() error {
 	address, err := geo.Geocode(u.PostalCode)
+	if err != nil {
+		return err
+	}
 
 	u.Latitude = address.Lat
 	u.Longitude = address.Lng
 
-	return err
+	if u.Latitude == 0 || u.Longitude == 0 {
+		return ErrGeolocation
+	}
+
+	return nil
 }
 
 // GenDistance returns the distance of a user from a particular geolocation

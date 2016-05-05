@@ -1,7 +1,7 @@
 /*global fetch, navigator */
 import React, {AsyncStorage} from 'react-native';
 
-import Messager from 'react-native';
+import Messager from './Messager';
 
 const _UTLookingFor = 1;
 const _UTHosting = 2;
@@ -194,13 +194,13 @@ let Api = {
       },
 
       request(userID, pubKey) {
-        return fetch(`http://localhost:4000/threads`, {
+        return fetch("http://localhost:4000/threads/", {
           headers: _headers(token),
+          method: 'POST',
           body: JSON.stringify({
             user_id: userID,
             public_key: pubKey
-          }),
-          method: 'POST'
+          })
         })
         .then(res => _processJSON(res));
       },
@@ -217,14 +217,16 @@ let Api = {
       },
 
       send(threadID, text, messager) {
-        let encryptedMessage = messager.encrypt(text);
-        let senderCopyMessage = messager.encryptForMe(text);
+        // let encryptedMessage = messager.encrypt(text);
+        // let senderCopyMessage = messager.encryptForMe(text);
 
         return fetch(`http://localhost:4000/messages/${threadID}`, {
           headers: _headers(token),
           body: JSON.stringify({
-            encrypted_message: encryptedMessage,
-            sender_copy_message: senderCopyMessage
+            // encrypted_message: encryptedMessage,
+            // sender_copy_message: senderCopyMessage
+            encrypted_message: text,
+            sender_copy_message: text
           }),
           method: 'POST'
         })

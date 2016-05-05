@@ -2,6 +2,7 @@
 
 import React, {
   Component,
+  ActivityIndicatorIOS,
   StyleSheet,
   ListView,
   View,
@@ -30,7 +31,7 @@ export default class ThreadList extends Component {
 
   _getThreads() {
     Api.messages(this.props.token).threads()
-    .then(res => this.setState({threads: res.message_threads, ds: this.state.ds.cloneWithRows(res.message_threads)}))
+    .then(res => this.setState({threads: res.message_threads, ds: this.state.ds.cloneWithRows(res.message_threads), fetched: true}))
     .catch(err => console.log(err));
   }
 
@@ -69,8 +70,8 @@ export default class ThreadList extends Component {
     };
   }
 
-  nothing() {
-    if(this.state.threads.length < 1) {
+  _nothing() {
+    if(this.state.fetched === true && this.state.threads.length < 1) {
       if(this.props.navigator.props.userType === 2) {
         return <Text style={styles.nothing}>{I18n.t('noContact')}</Text>;
       } else {
@@ -81,10 +82,19 @@ export default class ThreadList extends Component {
     return <View/>;
   }
 
+  _loading() {
+    if(!this.state.fetched) {
+      return <ActivityIndicatorIOS style={{flex: 1}} animating={true} size="large" />;
+    }
+
+    return <View/>;
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        {this.nothing()}
+        {this._nothing()}
+        {this._loading()}
         <ListView
           dataSource={this.state.ds}
           renderRow={this._renderRow.bind(this)}

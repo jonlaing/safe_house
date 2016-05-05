@@ -64,6 +64,7 @@ export default class SignUpHosting extends Component {
       this.state.passwordConfirm
     )
     .then(resp => console.log(resp))
+    .then(() => this.props.navigator.props.eventEmitter.emit('login'))
     .then(() => this.props.navigator.pop())
     .catch((err) => this._handleErrors(err));
   }

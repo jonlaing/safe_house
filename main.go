@@ -56,7 +56,7 @@ func main() {
 	{
 		threads.GET("/", MessageThreadIndex)
 		threads.POST("/", MessageThreadCreate)
-		threads.GET("/:user_id", MessageThreadShow)
+		threads.GET("/:thread_id", MessageThreadShow)
 		threads.PATCH("/:thread_id/accept", MessageThreadStatus(models.MTOpened))
 		threads.PATCH("/:thread_id/close", MessageThreadStatus(models.MTClosed))
 		threads.PATCH("/:thread_id/block", MessageThreadStatus(models.MTBlocked))

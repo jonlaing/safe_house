@@ -188,6 +188,11 @@ func (mt *MessageThread) GetUser(userID uint64, db *gorm.DB) (mtu MessageThreadU
 // GetOtherUser returns the MessageThreadUser of the other user in the chat
 func (mt *MessageThread) GetOtherUser(userID uint64, db *gorm.DB) (mtu MessageThreadUser, err error) {
 	err = db.Where("thread_id = ? AND user_id != ?", mt.ID, userID).Find(&mtu).Error
+	if err != nil {
+		return
+	}
+
+	err = db.Where("id = ?", mtu.UserID).Find(&mtu.User).Error
 	return
 }
 
@@ -217,6 +222,19 @@ func (mt *MessageThread) UpdateStatus(status ThreadStatus, u *User, db *gorm.DB)
 	mt.UpdatedAt = time.Now()
 
 	return db.Save(&mt).Error
+}
+
+func (mt *MessageThread) GetMessages(userID uint64, db *gorm.DB) (ms []Message, err error) {
+	err = db.Where("thread_id = ?", mt.ID).Order("created_at DESC").Limit(25).Find(&ms).Error
+	if err != nil {
+		return
+	}
+
+	for i := range ms {
+		ms[i].IsMe = ms[i].UserID == userID
+	}
+
+	return
 }
 
 // GetLastMessage fills in the last message of a message thread

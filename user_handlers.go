@@ -42,7 +42,7 @@ func UserCreate(c *gin.Context) {
 
 	// Only generate coordinates if this user is offering housing
 	if user.Type == models.UTHousing {
-		if err := user.GenCoordinates(); err != nil {
+		if err := user.GenCoordinates(); err != nil || user.Latitude == 0 {
 			c.AbortWithError(http.StatusNotAcceptable, err)
 			return
 		}

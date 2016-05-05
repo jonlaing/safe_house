@@ -55,6 +55,15 @@ let Router = {
     };
   },
 
+  chatScreen(threadID, token) {
+    return {
+      renderScene(navigator) {
+        let ChatScreen = require('./ChatScreen');
+        return <ChatScreen threadID={threadID} token={token} navigator={navigator} />;
+      }
+    };
+  },
+
   threadList(token) {
     return {
       renderScene(navigator) {

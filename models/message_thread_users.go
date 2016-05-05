@@ -11,6 +11,7 @@ type MessageThreadUser struct {
 	ID        uint64    `json:"id" gorm:"primary_key"`
 	ThreadID  uint64    `json:"thread_id" binding:"required"`
 	UserID    uint64    `json:"user_id"`
+	User      User      `json:"user" sql:"-"`
 	PublicKey string    `json:"public_key" sql:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

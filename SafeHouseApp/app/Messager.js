@@ -5,13 +5,13 @@ import React, {
 } from 'react-native';
 
 import keypair from 'keypair';
+import des from '@remobile/react-native-des';
 
 const privKeyIndex = 'PRIV_KEY';
 const pubKeyIndex = 'PUB_KEY';
 
 export default class Messager {
-  constructor(username, theirKey = null, theirSig = null) {
-    this.username = username;
+  constructor(theirKey = null, theirSig = null) {
     this.privKey = null;
     this.pubKey = null;
     this.theirKey = theirKey;
@@ -74,7 +74,9 @@ export default class Messager {
   }
 
   _encrypt(message, key) {
-    return pgp.encrypt({data: message, publicKeys: key, privateKeys: this.privKey});
+    return new Promise((resolve, reject) => {
+      des.encrypt(message, key, resolve, reject);
+    });
   }
 
   encrypt(message) {
@@ -92,15 +94,7 @@ export default class Messager {
         return;
       }
 
-      pgp.decrypt({message: cipher, privateKey: this.key})
-      .then((result) => {
-        if(this.theirKey === null && result.signatures[0].valid) {
-          this.theirKey = result.signatures[0].keyid;
-        }
-
-        resolve(result.data);
-      })
-      .catch(err => reject(err));
+      des.decrypt(
     });
   }
 }
