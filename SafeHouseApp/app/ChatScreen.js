@@ -11,7 +11,6 @@ import Chat from 'react-native-gifted-messenger';
 
 import Api from './Api';
 import Colors from './Colors';
-import Messager from './Messager';
 
 import NavBar from './NavBar';
 
@@ -19,7 +18,7 @@ export default class ChatScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.messager = new Messager();
+    this.messager = this.props.navigator.props.messager;
 
     this.state = { username: '', messages: [], pubKey: null };
   }
@@ -33,7 +32,19 @@ export default class ChatScreen extends Component {
     }))
     .then(() => this.messager.setTheirKey(this.state.pubKey))
     .catch(err => console.log(err));
-    this.messager.getKeys();
+    this.openSocket();
+  }
+
+  openSocket() {
+     Api.messages(this.props.token).socket(this.props.threadID,
+        function (res) {
+          let data = JSON.parse(res.data);
+          let msgs = this.parseMessages(data.messages);
+          if(msgs.length > 0) {
+            this.setState({messages: this.state.messages.concat(msgs)});
+          }
+        }.bind(this),
+        (err) => console.log("err:", err));
   }
 
   handleSend(message) {
@@ -66,6 +77,7 @@ export default class ChatScreen extends Component {
           styles={styles}
           messages={this.state.messages}
           handleSend={this.handleSend.bind(this)}
+          ref="chat"
         />
         <NavBar
           title={this.state.username}

@@ -55,7 +55,7 @@ export default class ThreadRow extends Component {
 
                     return I18n.t('waiting');
             default:
-                    return this.props.lastMessage;
+                    return this.props.messager.decrypt(this.props.lastMessage);
     }
   }
 

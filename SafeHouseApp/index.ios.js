@@ -22,6 +22,7 @@ class SafeHouseApp extends Component {
     super(props);
 
     this.eventEmitter = new EventEmitter();
+    this.messager = new Messager();
     this.state = { token: null, tokenFetched: false, userType: 0 };
   }
 
@@ -31,8 +32,6 @@ class SafeHouseApp extends Component {
   }
 
   _getUserProps() {
-    let messager = new Messager();
-
     AsyncStorage.multiGet(['AUTH_TOKEN', 'user_type'])
     .then(stores => {
       let tok, uType;
@@ -48,7 +47,7 @@ class SafeHouseApp extends Component {
 
       this.setState({token: tok, tokenFetched: true, userType: parseInt(uType)});
     })
-    .then(() => messager.getKeys()) // generate keys if they're not already there
+    .then(() => this.messager.getKeys()) // generate keys if they're not already there
     .catch((err) => { console.log(err); this.setState({tokenFetched: true}); });
   }
 
@@ -77,6 +76,7 @@ class SafeHouseApp extends Component {
         showNavigationBar={false}
         userType={this.state.userType}
         eventEmitter={this.eventEmitter}
+        messager={this.messager}
       />
     );
   }

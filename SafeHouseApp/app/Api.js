@@ -1,5 +1,7 @@
-/*global fetch, navigator */
+/*global fetch, navigator, WebSocket */
 import React, {AsyncStorage} from 'react-native';
+
+import moment from 'moment';
 
 import Messager from './Messager';
 
@@ -224,25 +226,64 @@ let Api = {
       },
 
       send(threadID, text, messager) {
-        return new Promise((resolve, reject) => {
-          messager.encrypt(text).then(encrypted => {
-            messager.encryptForMe(text).then(senderCopy => {
-              fetch(`http://localhost:4000/messages/${threadID}`, {
-                headers: _headers(token),
-                body: JSON.stringify({
-                  encrypted_message: encrypted,
-                  sender_copy_message: senderCopy
-                }),
-                method: 'POST'
-              })
-              .then(res => _processJSON(res))
-              .then(res => resolve(res))
-              .catch(err => reject(err));
-            })
-            .catch(err => reject(err));
+          let encrypted = messager.encrypt(text);
+          let senderCopy = messager.encryptForMe(text);
+
+          return fetch(`http://localhost:4000/messages/${threadID}`, {
+            headers: _headers(token),
+            body: JSON.stringify({
+              encrypted_message: encrypted,
+              sender_copy_message: senderCopy
+            }),
+            method: 'POST'
           })
-          .catch(err => reject(err));
-        });
+          .then(res => _processJSON(res));
+      },
+
+      socket(threadID, onMessage, onError) {
+        var _socket = null;
+        var sendInterval, reopenInterval;
+
+        // once we get the ticket througha normal https request, open up the socket
+        // using the ticket for authentication
+        if(!_socket) {
+          _socket = new WebSocket(`ws://localhost:4000/messages/${threadID}/subscribe?token=${token}`);
+        } else {
+          return;
+        }
+
+        let start = function() {
+          _socket.onmessage = onMessage;
+          _socket.onerror = onError;
+
+          _socket.onopen = () => {
+            clearInterval(reopenInterval);
+
+            let lastNow = moment(Date.now()).unix();
+
+            sendInterval = setInterval(() => {
+              if(!_socket || _socket.readyState === 2 || _socket.readyState === 3) {
+                clearInterval(sendInterval);
+                return;
+              }
+
+              _socket.send(lastNow.toString());
+              lastNow = moment(Date.now()).unix();
+            }, 1000);
+          };
+
+          reopenInterval = setInterval(() => {
+            if(!_socket || _socket.readyState === 0 || _socket.readyState === 1) {
+              clearInterval(reopenInterval);
+              return;
+            }
+
+            _socket = null;
+            start();
+          }, 5000);
+        };
+
+        start();
       }
     };
   }

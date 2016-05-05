@@ -20,6 +20,8 @@ export default class ThreadList extends Component {
   constructor(props) {
     super(props);
 
+    this.messager = this.props.navigator.props.messager;
+
     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = { threads: [], ds: ds.cloneWithRows([]), page: 0, refreshing: false, fetched: false };
   }
@@ -57,6 +59,7 @@ export default class ThreadList extends Component {
       lastMessage={lastMessage}
       updatedAt={thread.last_message.created_at}
       onPress={this.handlePress(thread.status, thread.id, thread.user.id).bind(this)}
+      messager={this.messager}
     />;
   }
 

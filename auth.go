@@ -26,17 +26,23 @@ func init() {
 // Auth is middleware for authenticating users requests
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokn, ok := c.Request.Header["X-Auth-Token"]
+		tokn := c.Request.Header.Get("X-Auth-Token")
 
-		if !ok {
-			c.AbortWithError(http.StatusUnauthorized, ErrNoTokenHeader)
-			return
+		if len(tokn) <= 0 {
+			// this might be a websocket request, so check the get variables
+			t, ok := c.GetQuery("token")
+			if !ok {
+				c.AbortWithError(http.StatusUnauthorized, ErrNoTokenHeader)
+				return
+			}
+
+			tokn = t
 		}
 
 		var userID int
 
 		// parsingKey is a func defined further down in this file
-		token, err := jwt.Parse(tokn[0], parsingKey)
+		token, err := jwt.Parse(tokn, parsingKey)
 		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, ErrParseToken)
 			return
