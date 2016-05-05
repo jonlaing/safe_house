@@ -26,6 +26,8 @@ export default class ThreadRow extends Component {
                     return <Icon name="schedule" size={32} color="orange" />;
             case 2:
                     return <Icon name="check-circle" size={32} color={Colors.action} />;
+            case 3:
+                    return <Icon name="lock-open" size={32} color="orange" />;
             default:
                     return <View />;
     }

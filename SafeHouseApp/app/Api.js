@@ -58,13 +58,14 @@ let Api = {
         });
       },
 
-      login(username, password) {
+      login(username, password, publicKey) {
         return fetch('http://localhost:4000/login', {
           headers: _headers(),
           method: 'POST',
           body: JSON.stringify({
             username: username,
-            password: password
+            password: password,
+            public_key: publicKey
           })
         })
         .then(resp => _processJSON(resp))
@@ -72,7 +73,8 @@ let Api = {
       },
 
       logout() {
-        return AsyncStorage.multiRemove(['AUTH_TOKEN', 'username', 'user_type', 'PRIV_KEY', 'PUB_KEY']);
+        return AsyncStorage.multiRemove(['AUTH_TOKEN', 'username', 'user_type', 'PRIV_KEY', 'PUB_KEY'])
+        .catch(err => console.log("error removing", err));
       },
 
       _signUp(user) {
@@ -205,6 +207,11 @@ let Api = {
         .then(res => _processJSON(res));
       },
 
+      list(threadID) {
+        return fetch(`http://localhost:4000/messages/${threadID}`, { headers: _headers(token) })
+        .then(res => _processJSON(res));
+      },
+
       accept(threadID, pubKey) {
         return fetch(`http://localhost:4000/threads/${threadID}/accept`, {
           headers: _headers(token),
@@ -217,20 +224,25 @@ let Api = {
       },
 
       send(threadID, text, messager) {
-        // let encryptedMessage = messager.encrypt(text);
-        // let senderCopyMessage = messager.encryptForMe(text);
-
-        return fetch(`http://localhost:4000/messages/${threadID}`, {
-          headers: _headers(token),
-          body: JSON.stringify({
-            // encrypted_message: encryptedMessage,
-            // sender_copy_message: senderCopyMessage
-            encrypted_message: text,
-            sender_copy_message: text
-          }),
-          method: 'POST'
-        })
-        .then(res => _processJSON(res));
+        return new Promise((resolve, reject) => {
+          messager.encrypt(text).then(encrypted => {
+            messager.encryptForMe(text).then(senderCopy => {
+              fetch(`http://localhost:4000/messages/${threadID}`, {
+                headers: _headers(token),
+                body: JSON.stringify({
+                  encrypted_message: encrypted,
+                  sender_copy_message: senderCopy
+                }),
+                method: 'POST'
+              })
+              .then(res => _processJSON(res))
+              .then(res => resolve(res))
+              .catch(err => reject(err));
+            })
+            .catch(err => reject(err));
+          })
+          .catch(err => reject(err));
+        });
       }
     };
   }

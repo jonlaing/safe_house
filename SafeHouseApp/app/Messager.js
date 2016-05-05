@@ -4,14 +4,14 @@ import React, {
   AsyncStorage
 } from 'react-native';
 
-import keypair from 'keypair';
-import des from '@remobile/react-native-des';
+import RSAKey from 'react-native-rsa';
 
 const privKeyIndex = 'PRIV_KEY';
 const pubKeyIndex = 'PUB_KEY';
 
 export default class Messager {
   constructor(theirKey = null, theirSig = null) {
+    this.rsa = new RSAKey();
     this.privKey = null;
     this.pubKey = null;
     this.theirKey = theirKey;
@@ -54,13 +54,17 @@ export default class Messager {
   }
 
   genKeys() {
-    let keys = keypair();
-    console.log(keys);
+    const bits = 1024;
+    const exponent = '10001'; // must be a string. This is hex string. decimal = 65537
+    this.rsa.generate(bits, exponent);
+
+    let pub = this.rsa.getPublicString();
+    let priv = this.rsa.getPrivateString();
 
     return new Promise((resolve, reject) => {
-      AsyncStorage.multiSet([[privKeyIndex, keys.private], [pubKeyIndex, keys.public]])
-      .then(() => { this.privKey = keys.private; this.pubKey = keys.public; })
-      .then(() => resolve({priv: keys.private, pub: keys.public}))
+      AsyncStorage.multiSet([[privKeyIndex, priv], [pubKeyIndex, pub]])
+      .then(() => { this.privKey = priv; this.pubKey = pub; })
+      .then(() => resolve({priv: priv, pub: pub}))
       .catch(err => reject(err));
     });
   }
@@ -74,9 +78,18 @@ export default class Messager {
   }
 
   _encrypt(message, key) {
-    return new Promise((resolve, reject) => {
-      des.encrypt(message, key, resolve, reject);
-    });
+    if(key === undefined || key === null) {
+      throw new Error("key not set");
+    }
+
+    this.rsa.setPublicString(key);
+    let encrypted = this.rsa.encrypt(message);
+
+    if(encrypted === null) {
+      throw new Error("Couldn't encrypt message");
+    }
+
+    return encrypted;
   }
 
   encrypt(message) {
@@ -88,14 +101,18 @@ export default class Messager {
   }
 
   decrypt(cipher) {
-    return new Promise((resolve, reject) => {
-      if(this.privKey == null) {
-        reject(new Error("Key has not been generated"));
-        return;
-      }
+    if(this.privKey === null) {
+      throw new Error("Key has not been generated");
+    }
 
-      des.decrypt(
-    });
+    this.rsa.setPrivateString(this.privKey);
+    let decrypted = this.rsa.decrypt(cipher);
+
+    if(decrypted === null) {
+      throw new Error("Couldn't decrypt message");
+    }
+
+    return decrypted;
   }
 }
 

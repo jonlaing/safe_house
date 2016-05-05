@@ -16,6 +16,7 @@ import I18n from './i18n';
 import Router from './Router';
 import Api from './Api';
 import Colors from './Colors';
+import Messager from './Messager';
 
 import NavBar from './NavBar';
 import IconButton from './IconButton';
@@ -36,21 +37,24 @@ export default class LoginScreen extends Component {
   _handleSubmit() {
     this.setState({usernameError: '', passwordError: ''});
 
-    Api.auth().login(this.state.username, this.state.password)
-    .then(res => this._handleSuccess(res))
-    .catch(err => {
-      console.log(err);
-      switch(err.response.status) {
-        case 401:
-          this.setState({passwordError: I18n.t('incorrectPassword')});
-          break;
-        case 404:
-          this.setState({usernameError: I18n.t('incorrectUsername') });
-          break;
-        default:
-          this.setState({usernameError: I18n.t('problem'), passwordError: I18n.t('problem')});
-          break;
-      }
+    let messager = new Messager();
+    messager.getKeys().then((keys) => {
+      Api.auth().login(this.state.username, this.state.password, keys.pub)
+      .then(res => this._handleSuccess(res))
+      .catch(err => {
+        console.log(err);
+        switch(err.response.status) {
+          case 401:
+            this.setState({passwordError: I18n.t('incorrectPassword')});
+            break;
+          case 404:
+            this.setState({usernameError: I18n.t('incorrectUsername') });
+            break;
+          default:
+            this.setState({usernameError: I18n.t('problem'), passwordError: I18n.t('problem')});
+            break;
+        }
+      });
     });
   }
 

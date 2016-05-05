@@ -224,3 +224,37 @@ func (u *User) Merge(u2 User) {
 		u.Locale = u2.Locale
 	}
 }
+
+func (u *User) UpdatePublicKey(k string, db *gorm.DB) error {
+	u.PublicKey = k
+	if err := db.Save(u).Error; err != nil {
+		return err
+	}
+
+	// Sucks but I have to do this in three queries, at least until
+	// I figure out to do a join and an update in the same statement
+	var threadIDs []uint64
+
+	if err := db.Table("message_threads").
+		Joins("left join message_thread_users on message_thread_users.thread_id = message_threads.id").
+		Where("message_thread_users.user_id = ?", u.ID).
+		Pluck("message_threads.id", &threadIDs).Error; err != nil {
+		return err
+	}
+
+	if err := db.Table("message_threads").
+		Where("id IN (?)", threadIDs).
+		Where("user_id = ?", u.ID).
+		UpdateColumn("status", MTPubKeyChange).
+		UpdateColumn("status_changed_by", MTSInitiator).Error; err != nil {
+		return err
+	}
+
+	err := db.Table("message_threads").
+		Where("id IN (?)", threadIDs).
+		Where("user_id != ?", u.ID).
+		UpdateColumn("status", MTPubKeyChange).
+		UpdateColumn("status_changed_by", MTSAccepter).Error
+
+	return err
+}

@@ -24,6 +24,22 @@ const (
 	MTBlocked
 )
 
+// ThreadStatusUpdatedBy indicates who changed the status of the message thread
+type ThreadStatusUpdatedBy int
+
+const (
+	// MTSNone - No one updated the status
+	MTSNone ThreadStatusUpdatedBy = iota
+	// MTSInitiator - The user inidcated by MessageThread.UserID
+	// updated the status
+	MTSInitiator
+	// MTSAccepter - The user not inidcated by MessageThread.UserID
+	// updated the status
+	MTSAccepter
+	// MTSBoth - Both users updated the status
+	MTSBoth
+)
+
 // statuses that can be seen by users
 var visibleThreadStatuses []ThreadStatus
 
@@ -33,13 +49,14 @@ func init() {
 
 // MessageThread holds a chat and public keys for a conversation
 type MessageThread struct {
-	ID          uint64       `json:"id" gorm:"primary_key"`
-	UserID      uint64       `json:"user_id"` // The user who requested the chat
-	Status      ThreadStatus `json:"status"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
-	User        User         `json:"user" sql:"-"`
-	LastMessage Message      `json:"last_message" sql:"-"`
+	ID              uint64                `json:"id" gorm:"primary_key"`
+	UserID          uint64                `json:"user_id"` // The user who requested the chat
+	Status          ThreadStatus          `json:"status"`
+	StatusChangedBy ThreadStatusUpdatedBy `json:"status_changed_by"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	User            User                  `json:"user" sql:"-"`
+	LastMessage     Message               `json:"last_message" sql:"-"`
 }
 
 // GetMessageThreadByID gets the thread based on id

@@ -107,6 +107,36 @@ func MessageThreadShow(c *gin.Context) {
 		return
 	}
 
+	otherID, err := ParamID("user_id", c)
+	if err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
+	mt, mtu, err := models.GetMessageThreadByUserID(user, otherID, db)
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+
+	err = mt.GetRelatedUser(user.ID, db)
+	if err != nil {
+		c.AbortWithError(http.StatusNotAcceptable, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message_thread": mt, "other_user": mtu})
+}
+
+func MessageIndex(c *gin.Context) {
+	db := GetDB(c)
+
+	user, err := CurrentUser(c)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+
 	threadID, err := ParamID("thread_id", c)
 	if err != nil {
 		c.AbortWithError(http.StatusNotAcceptable, err)

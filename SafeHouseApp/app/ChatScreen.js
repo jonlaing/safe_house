@@ -21,12 +21,17 @@ export default class ChatScreen extends Component {
 
     this.messager = new Messager();
 
-    this.state = { username: '', messages: [] };
+    this.state = { username: '', messages: [], pubKey: null };
   }
 
   componentDidMount() {
-    Api.messages(this.props.token).thread(this.props.threadID)
-    .then(res => this.setState({username: res.message_thread.user.username, messages: this.parseMessages(res.messages)}))
+    Api.messages(this.props.token).list(this.props.threadID)
+    .then(res => this.setState({
+      username: res.message_thread.user.username,
+      messages: this.parseMessages(res.messages),
+      pubKey: res.message_thread.user.public_key
+    }))
+    .then(() => this.messager.setTheirKey(this.state.pubKey))
     .catch(err => console.log(err));
     this.messager.getKeys();
   }
@@ -39,14 +44,18 @@ export default class ChatScreen extends Component {
 
   parseMessages(messages) {
     return messages.reverse().map((message) => {
-      let text = message.is_me ? message.sender_copy_message : message.encrypted_message;
-      console.log(message.is_me);
-      return {
-        uniqueId: message.id,
-        text: text,
-        position: message.is_me ? 'right' : 'left', // left for received messages, right for sent messages, center for server messages
-        date: message.created_at
-      };
+      let cipher = message.is_me ? message.sender_copy_message : message.encrypted_message;
+
+      try {
+        return {
+          uniqueId: message.id,
+          text: this.messager.decrypt(cipher),
+          position: message.is_me ? 'right' : 'left', // left for received messages, right for sent messages, center for server messages
+          date: message.created_at
+        };
+      } catch(e) {
+        console.log(e);
+      }
     });
   }
 

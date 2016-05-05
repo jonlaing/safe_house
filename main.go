@@ -56,7 +56,7 @@ func main() {
 	{
 		threads.GET("/", MessageThreadIndex)
 		threads.POST("/", MessageThreadCreate)
-		threads.GET("/:thread_id", MessageThreadShow)
+		threads.GET("/:user_id", MessageThreadShow)
 		threads.PATCH("/:thread_id/accept", MessageThreadStatus(models.MTOpened))
 		threads.PATCH("/:thread_id/close", MessageThreadStatus(models.MTClosed))
 		threads.PATCH("/:thread_id/block", MessageThreadStatus(models.MTBlocked))
@@ -66,6 +66,7 @@ func main() {
 	messages := r.Group("messages")
 	messages.Use(Auth())
 	{
+		messages.GET("/:thread_id", MessageIndex)
 		messages.POST("/:thread_id", MessageCreate)
 		messages.GET("/:thread_id/subscribe", MessageThreadSubscribe)
 	}

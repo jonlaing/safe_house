@@ -17,7 +17,7 @@ export default class MessageUserButton extends Component {
     super(props);
     this.messager = new Messager();
 
-    this.state = { status: 0, threadUserID: 0 };
+    this.state = { status: 0, threadUserID: 0, threadID: 0, statusChangedBy: 0 };
   }
 
   componentDidMount() {
@@ -91,6 +91,27 @@ export default class MessageUserButton extends Component {
                         large={true}
                         onPress={this._handleSubmit.bind(this)} />
                     );
+            case 3:
+                    if(this.state.threadUserID === this.props.userID && this.state.statusChangedBy === 2) {
+                      return (
+                        <IconButton
+                          name="check-circle"
+                          label={I18n.t('pubKeyAccept')}
+                          primary={true}
+                          large={true}
+                          onPress={this._handleSubmit.bind(this)} />
+                      );
+                    }
+
+                    return (
+                      <IconButton
+                        name="schedule"
+                        label={I18n.t('pubKeyWaiting')}
+                        primary={false}
+                        large={true}
+                        onPress={this._handleSubmit.bind(this)} />
+                    );
+
             default:
                     return <View />;
     }

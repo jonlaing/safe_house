@@ -37,6 +37,8 @@ I18n.translations = {
     message: 'Message this person',
     waiting: 'Awaiting confirmation',
     accept: 'Accept conversation',
+    pubKeyAccept: 'Accept new PublicKey',
+    pubKeyWaiting: 'Awaiting PublicKey',
 
     // THREADS
     noContact: 'No one has contacted you yet.\nCheck back soon.',
