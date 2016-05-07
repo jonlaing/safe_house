@@ -12,8 +12,6 @@ import React, {
 
 import ExNavigator from '@exponent/react-native-navigator';
 
-import Api from './Api';
-import Utils from './Utils';
 import I18n from './i18n';
 import Router from './Router';
 
@@ -24,7 +22,7 @@ export default class MatchList extends Component {
   constructor(props) {
     super(props);
 
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
 
     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = { matches: [], ds: ds.cloneWithRows([]), page: 0, refreshing: false, fetched: false };
@@ -41,7 +39,7 @@ export default class MatchList extends Component {
     .then(res => refresh ? res.users : this.state.matches.concat(res.users))
     .then(matches => this.setState({matches: matches, ds: this.state.ds.cloneWithRows(matches)}))
     .then(() => refresh ? {} : this.setState({page: page}))
-    .catch(err => console.log(Utils.unauthorized(err, this.props.navigator.props.eventEmitter)));
+    .catch(err => console.log(err));
   }
 
   _refresh() {

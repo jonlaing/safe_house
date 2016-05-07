@@ -8,7 +8,6 @@ import React, {
   Text
 } from 'react-native';
 
-import Api from './Api';
 import Router from './Router';
 
 import NavBarMain from './NavBarMain';
@@ -16,7 +15,7 @@ import NavBarMain from './NavBarMain';
 export default class SettingsScreen extends Component {
   constructor(props) {
     super(props);
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
   }
 
   handleLogout() {

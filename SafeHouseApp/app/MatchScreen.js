@@ -12,7 +12,6 @@ import ExNavigator from '@exponent/react-native-navigator';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import I18n from './i18n';
-import Api from './Api';
 import Colors from './Colors';
 import formatter from './formatter';
 
@@ -23,7 +22,7 @@ export default class MatchScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
 
     this.state = { user: {} };
   }

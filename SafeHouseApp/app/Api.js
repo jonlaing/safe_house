@@ -17,6 +17,14 @@ const _UHDShortTerm = 1;
 const _UHDMediumTerm = 2;
 const _UHDLongTerm = 3;
 
+function _root(prod = false) {
+  if(prod === true) {
+    return "tranquil-island-89911.herokuapp.com";
+  }
+
+  return "localhost:4000";
+}
+
 function _headers(token, json = true) {
  if(token !== undefined) {
    return {
@@ -41,8 +49,9 @@ function _unauthorized(status) {
 }
 
 class Api {
-  constructor(eventEmitter) {
+  constructor(eventEmitter, prod = false) {
     this.emitter = eventEmitter;
+    this.location = _root(prod);
   }
 
   _processJSON(resp) {
@@ -74,7 +83,7 @@ class Api {
       },
 
       login: (username, password, publicKey) => {
-        return fetch('http://localhost:4000/login', {
+        return fetch(`http://${this.location}/login`, {
           headers: _headers(),
           method: 'POST',
           body: JSON.stringify({
@@ -100,7 +109,7 @@ class Api {
 
             user.public_key = keys.pub;
 
-            fetch('http://localhost:4000/signup', {
+            fetch(`http://${this.location}/signup`, {
               headers: _headers(),
               method: 'POST',
               body: JSON.stringify(user)
@@ -161,7 +170,7 @@ class Api {
               unit: unit
             };
 
-            fetch(`http://localhost:4000/matches/${userID}`, {
+            fetch(`http://${this.location}/matches/${userID}`, {
               headers: _headers(token),
               method: 'POST',
               body: JSON.stringify(search)
@@ -185,7 +194,7 @@ class Api {
               page: page
             };
 
-            fetch('http://localhost:4000/matches', {
+            fetch(`http://${this.location}/matches`, {
               headers: _headers(token),
               method: 'POST',
               body: JSON.stringify(search)
@@ -202,17 +211,17 @@ class Api {
   messages(token) {
     return {
       threads: () => {
-        return fetch(`http://localhost:4000/threads`, { headers: _headers(token) })
+        return fetch(`http://${this.location}/threads`, { headers: _headers(token) })
         .then(res => this._processJSON(res));
       },
 
       thread: (userID) => {
-        return fetch(`http://localhost:4000/threads/${userID}`, { headers: _headers(token) })
+        return fetch(`http://${this.location}/threads/${userID}`, { headers: _headers(token) })
         .then(res => this._processJSON(res));
       },
 
       request: (userID, pubKey) => {
-        return fetch("http://localhost:4000/threads/", {
+        return fetch(`http://${this.location}/threads/`, {
           headers: _headers(token),
           method: 'POST',
           body: JSON.stringify({
@@ -224,12 +233,12 @@ class Api {
       },
 
       list: (threadID) => {
-        return fetch(`http://localhost:4000/messages/${threadID}`, { headers: _headers(token) })
+        return fetch(`http://${this.location}/messages/${threadID}`, { headers: _headers(token) })
         .then(res => this._processJSON(res));
       },
 
       accept: (threadID, pubKey) => {
-        return fetch(`http://localhost:4000/threads/${threadID}/accept`, {
+        return fetch(`http://${this.location}/threads/${threadID}/accept`, {
           headers: _headers(token),
           body: JSON.stringify({
             public_key: pubKey
@@ -243,7 +252,7 @@ class Api {
           let encrypted = messager.encrypt(text);
           let senderCopy = messager.encryptForMe(text);
 
-          return fetch(`http://localhost:4000/messages/${threadID}`, {
+          return fetch(`http://${this.location}/messages/${threadID}`, {
             headers: _headers(token),
             body: JSON.stringify({
               encrypted_message: encrypted,
@@ -261,7 +270,7 @@ class Api {
         // once we get the ticket througha normal https request, open up the socket
         // using the ticket for authentication
         if(!_socket) {
-          _socket = new WebSocket(`ws://localhost:4000/messages/${threadID}/subscribe?token=${token}`);
+          _socket = new WebSocket(`ws://${this.location}/messages/${threadID}/subscribe?token=${token}`);
         } else {
           return;
         }

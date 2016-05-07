@@ -9,7 +9,6 @@ import React, {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Chat from 'react-native-gifted-messenger';
 
-import Api from './Api';
 import Colors from './Colors';
 
 import NavBar from './NavBar';
@@ -19,7 +18,7 @@ export default class ChatScreen extends Component {
     super(props);
 
     this.messager = this.props.navigator.props.messager;
-    this.api = new Api(this.props.navigator.eventEmitter);
+    this.api = this.props.navigator.props.api;
 
     this.state = { username: '', messages: [], pubKey: null };
   }

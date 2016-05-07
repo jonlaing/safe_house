@@ -9,8 +9,6 @@ import React, {
   Text
 } from 'react-native';
 
-import Api from './Api';
-import Utils from './Utils';
 import Router from './Router';
 import I18n from './i18n';
 
@@ -21,7 +19,7 @@ export default class ThreadList extends Component {
   constructor(props) {
     super(props);
 
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
     this.messager = this.props.navigator.props.messager;
 
     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -36,7 +34,7 @@ export default class ThreadList extends Component {
   _getThreads() {
     this.api.messages(this.props.token).threads()
     .then(res => this.setState({threads: res.message_threads, ds: this.state.ds.cloneWithRows(res.message_threads), fetched: true}))
-    .catch(err => console.log(Utils.unauthorized(err, this.props.navigator.props.eventEmitter)));
+    .catch(err => console.log(err));
   }
 
   _renderRow(thread) {

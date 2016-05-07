@@ -14,6 +14,7 @@ import React, {
 import EventEmitter from 'EventEmitter';
 import ExNavigator from '@exponent/react-native-navigator';
 
+import Api from './app/Api';
 import Router from './app/Router';
 import Messager from './app/Messager';
 
@@ -22,6 +23,7 @@ class SafeHouseApp extends Component {
     super(props);
 
     this.eventEmitter = new EventEmitter();
+    this.api = new Api(this.eventEmitter);
     this.messager = new Messager();
     this.state = { token: null, tokenFetched: false, userType: 0 };
   }
@@ -76,6 +78,7 @@ class SafeHouseApp extends Component {
         showNavigationBar={false}
         userType={this.state.userType}
         eventEmitter={this.eventEmitter}
+        api={this.api}
         messager={this.messager}
         ref="nav"
       />

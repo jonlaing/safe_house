@@ -14,7 +14,6 @@ import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import I18n from './i18n';
 import Router from './Router';
-import Api from './Api';
 import Colors from './Colors';
 import Messager from './Messager';
 
@@ -26,7 +25,7 @@ export default class LoginScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
 
     this.state = {
       username: '',

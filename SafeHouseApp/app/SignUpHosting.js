@@ -7,8 +7,7 @@ import React, {
   ScrollView,
   TextInput,
   Picker,
-  View,
-  Text
+  View
 } from 'react-native';
 
 import _ from 'lodash';
@@ -16,7 +15,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import I18n from './i18n';
-import Api from './Api';
 import Colors from './Colors';
 
 import NavBar from './NavBar';
@@ -27,7 +25,7 @@ export default class SignUpHosting extends Component {
   constructor(props) {
     super(props);
 
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
 
     this.state = {
       username: '',

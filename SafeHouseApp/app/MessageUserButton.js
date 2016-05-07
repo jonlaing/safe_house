@@ -6,7 +6,6 @@ import React, {
 } from 'react-native';
 
 import Messager from './Messager';
-import Api from './Api';
 
 import I18n from './i18n';
 import IconButton from './IconButton';
@@ -14,7 +13,7 @@ import IconButton from './IconButton';
 export default class MessageUserButton extends Component {
   constructor(props) {
     super(props);
-    this.api = new Api(this.props.navigator.props.eventEmitter);
+    this.api = this.props.navigator.props.api;
     this.messager = new Messager();
 
     this.state = { status: 0, threadUserID: 0, threadID: 0, statusChangedBy: 0 };
