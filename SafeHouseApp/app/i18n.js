@@ -49,6 +49,51 @@ I18n.translations = {
     problem: 'There was a problem.',
     person: 'person',
     people: 'people'
+  },
+  ar: {
+    // WELCOME SCREEN
+    welcome: 'مرحبة بك في منزل امن',
+    welcomeParagraph: "اختار إذا تبحث إيواء أو إذا تريد ان استضاف شخص",
+    looking: 'ابحث',
+    hosting: 'اريد ان استضاف شخص',
+
+    // SIGN UP
+    signUp: 'سجل',
+    username: 'اسم المستخدم',
+    summary: 'حدثننا عن نفسك',
+    password: 'كلمة سر',
+    passwordConfirm: 'أكيد كلمة سر',
+    capacity: 'كم أشخاص؟',
+    duration: 'كم المدة؟',
+    postalCode: 'بريدي',
+
+    // LOG IN
+    login: 'دخول',
+    incorrectUsername: 'اسم المستخدم ما وجَدَ',
+    incorrectPassword: 'كلمة سر خاطئ',
+
+
+    // MATCHES
+    shortTerm: 'قصير الأجل',
+    mediumTerm: 'متوسط الأجل',
+    longTerm: 'طويل الأجل',
+    nothing: 'ما في أي شيء لعرض',
+    about: 'حول هذا المستخدم',
+    message: 'رسل رسالة إلى هذا الشخص',
+    waiting: 'انتظار تأكيد',
+    accept: 'قبل المحادثة',
+    pubKeyAccept: 'قبل ببلك كي جديد',
+    pubKeyWaiting: 'انتظار ببلك كي',
+
+    // THREADS
+    noContact: "لا أحد وقد اتصلت بعد. \n إرى مرة ثانية قريباً.",
+    noMessages: "لم يتصل أي شخص حتى الآن.\n إبحث أشخاص و إطلب للدردشة.",
+
+    submit: 'إرسال',
+    cancel: 'إلغي',
+    problem: 'كان مشكلة',
+    person: 'شخص',
+    people: 'أشخاص'
   }
 };
 
