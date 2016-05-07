@@ -32,35 +32,48 @@ function _headers(token, json = true) {
  }
 }
 
-function _processJSON(resp) {
-  // If the status is bad, throw a well-formatted error
-  if(!_ok(resp.status)) {
-    var error = new Error(resp.statusText);
-    error.response = resp;
-    throw error;
-  }
-
-  // otherwise return the JSON
-  return resp.json();
-}
-
 function _ok(status) {
   return status >= 200 && status < 300;
 }
 
-let Api = {
+function _unauthorized(status) {
+  return status === 401;
+}
+
+class Api {
+  constructor(eventEmitter) {
+    this.emitter = eventEmitter;
+  }
+
+  _processJSON(resp) {
+    // If the status is bad, throw a well-formatted error
+    if(!_ok(resp.status)) {
+      if(_unauthorized(resp.status)) {
+        this.auth().logout();
+      }
+
+      var error = new Error(resp.statusText);
+      error.response = resp;
+      throw error;
+    }
+
+    // otherwise return the JSON
+    return resp.json();
+  }
+
   auth() {
     return {
-      _completeLogin(res) {
+      _completeLogin: (res) => {
         console.log(res.user.type);
         return new Promise((resolve, reject) => {
           AsyncStorage.multiSet([['AUTH_TOKEN', res.token], ['username', res.user.username], ['user_type', res.user.type.toString()]])
+          .then(() => this.emitter.emit('login'))
           .then(() => resolve(res))
           .catch(err => reject(err));
         });
       },
 
-      login(username, password, publicKey) {
+      login: (username, password, publicKey) => {
         return fetch('http://localhost:4000/login', {
           headers: _headers(),
           method: 'POST',
@@ -70,16 +83,17 @@ let Api = {
             public_key: publicKey
           })
         })
-        .then(resp => _processJSON(resp))
-        .then(resp => Api.auth()._completeLogin(resp));
+        .then(resp => this._processJSON(resp))
+        .then(resp => this.auth()._completeLogin(resp));
       },
 
-      logout() {
+      logout: () => {
         return AsyncStorage.multiRemove(['AUTH_TOKEN', 'username', 'user_type', 'PRIV_KEY', 'PUB_KEY'])
+        .then(() => this.emitter.emit('logout'))
         .catch(err => console.log("error removing", err));
       },
 
-      _signUp(user) {
+      _signUp: (user) => {
         return new Promise((resolve, reject) => {
           let messager = new Messager();
           messager.getKeys().then((keys) => {
@@ -91,8 +105,8 @@ let Api = {
               method: 'POST',
               body: JSON.stringify(user)
             })
-            .then(resp => _processJSON(resp))
-            .then(resp => Api.auth()._completeLogin(resp))
+            .then(resp => this._processJSON(resp))
+            .then(resp => this.auth()._completeLogin(resp))
             .then(resp => resolve(resp))
             .catch(err => {
               err.response.json()
@@ -103,7 +117,7 @@ let Api = {
         });
       },
 
-      signUpLooking(username, capacity, summary, password, passwordConfirm) {
+      signUpLooking: (username, capacity, summary, password, passwordConfirm) => {
         let user = {
           username: username,
           type: _UTLookingFor,
@@ -115,10 +129,10 @@ let Api = {
           password_confirm: passwordConfirm
         };
 
-        return Api.auth()._signUp(user);
+        return this.auth()._signUp(user);
       },
 
-      signUpHosting(username, postalCode, capacity, duration, summary, password, passwordConfirm) {
+      signUpHosting: (username, postalCode, capacity, duration, summary, password, passwordConfirm) => {
         let user = {
           username: username,
           postal_code: postalCode,
@@ -131,14 +145,14 @@ let Api = {
           password_confirm: passwordConfirm
         };
 
-        return Api.auth()._signUp(user);
+        return this.auth()._signUp(user);
       }
     };
-  },
+  }
 
   matches(token) {
     return {
-      get(userID, unit = 0) {
+      get: (userID, unit = 0) => {
         return new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition((pos) => {
             let search = {
@@ -152,14 +166,14 @@ let Api = {
               method: 'POST',
               body: JSON.stringify(search)
             })
-            .then(res => _processJSON(res))
+            .then(res => this._processJSON(res))
             .then(res => resolve(res))
             .catch(err => reject(err));
           });
         });
       },
 
-      list(page, distance = 25, unit = 0) {
+      list: (page, distance = 25, unit = 0) => {
         return new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition((pos) => {
             let search = {
@@ -176,28 +190,28 @@ let Api = {
               method: 'POST',
               body: JSON.stringify(search)
             })
-            .then(res => _processJSON(res))
+            .then(res => this._processJSON(res))
             .then(res => resolve(res))
             .catch(err => reject(err));
           });
         });
       }
     };
-  },
+  }
 
   messages(token) {
     return {
-      threads() {
+      threads: () => {
         return fetch(`http://localhost:4000/threads`, { headers: _headers(token) })
-        .then(res => _processJSON(res));
+        .then(res => this._processJSON(res));
       },
 
-      thread(userID) {
+      thread: (userID) => {
         return fetch(`http://localhost:4000/threads/${userID}`, { headers: _headers(token) })
-        .then(res => _processJSON(res));
+        .then(res => this._processJSON(res));
       },
 
-      request(userID, pubKey) {
+      request: (userID, pubKey) => {
         return fetch("http://localhost:4000/threads/", {
           headers: _headers(token),
           method: 'POST',
@@ -206,15 +220,15 @@ let Api = {
             public_key: pubKey
           })
         })
-        .then(res => _processJSON(res));
+        .then(res => this._processJSON(res));
       },
 
-      list(threadID) {
+      list: (threadID) => {
         return fetch(`http://localhost:4000/messages/${threadID}`, { headers: _headers(token) })
-        .then(res => _processJSON(res));
+        .then(res => this._processJSON(res));
       },
 
-      accept(threadID, pubKey) {
+      accept: (threadID, pubKey) => {
         return fetch(`http://localhost:4000/threads/${threadID}/accept`, {
           headers: _headers(token),
           body: JSON.stringify({
@@ -222,10 +236,10 @@ let Api = {
           }),
           method: 'PATCH'
         })
-        .then(res => _processJSON(res));
+        .then(res => this._processJSON(res));
       },
 
-      send(threadID, text, messager) {
+      send: (threadID, text, messager) => {
           let encrypted = messager.encrypt(text);
           let senderCopy = messager.encryptForMe(text);
 
@@ -237,10 +251,10 @@ let Api = {
             }),
             method: 'POST'
           })
-          .then(res => _processJSON(res));
+          .then(res => this._processJSON(res));
       },
 
-      socket(threadID, onMessage, onError) {
+      socket: (threadID, onMessage, onError) => {
         var _socket = null;
         var sendInterval, reopenInterval;
 
@@ -287,7 +301,7 @@ let Api = {
       }
     };
   }
-};
+}
 
 export default Api;
 

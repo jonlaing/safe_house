@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"safe_house/models"
-	"strconv"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -36,10 +34,10 @@ func Auth() gin.HandlerFunc {
 				return
 			}
 
+			// for whatever reason, Go won't let me set tokn above, some sort
+			// of scoping issue, so I have to do this crap
 			tokn = t
 		}
-
-		var userID int
 
 		// parsingKey is a func defined further down in this file
 		token, err := jwt.Parse(tokn, parsingKey)
@@ -48,17 +46,23 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		userID, err = strconv.Atoi(fmt.Sprintf("%.f", token.Claims["user_id"]))
+		// Check this is the right user with correct API key
+		db := GetDB(c)
+		k := token.Claims["api_key"].(string)
+		user, err := models.GetUserByAPIKey(k, db)
 		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, err)
 			return
 		}
 
-		// Check this is the right user with correct API key
-		db := GetDB(c)
-		user, err := models.GetUserByID(uint64(userID), db)
-		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, models.ErrUserNotFound)
+		// Update the expiration time
+		if err := user.UpdateAPIKey(); err != nil {
+			c.AbortWithError(http.StatusNotAcceptable, err)
+			return
+		}
+
+		if err := db.Save(&user).Error; err != nil {
+			c.AbortWithError(http.StatusNotAcceptable, err)
 			return
 		}
 
@@ -68,11 +72,23 @@ func Auth() gin.HandlerFunc {
 }
 
 // Login a user
-func Login(user models.User, c *gin.Context) (tokenString string, err error) {
+func Login(user *models.User, c *gin.Context) (tokenString string, err error) {
+	db := GetDB(c)
+	// Get the APIKey, or generate a new one. Update the expiration time
+	if err := user.UpdateAPIKey(); err != nil {
+		return "", err
+	}
+
+	// Save the user
+	if err := db.Save(&user).Error; err != nil {
+		return "", err
+	}
+
+	// Make the token
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Set some claims
-	token.Claims["user_id"] = user.ID
+	token.Claims["api_key"] = user.APIKey
 
 	// Sign and get the complete encoded token as a string
 	tokenString, err = token.SignedString(hmacKey)

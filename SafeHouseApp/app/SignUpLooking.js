@@ -7,8 +7,7 @@ import React, {
   ScrollView,
   TextInput,
   Picker,
-  View,
-  Text
+  View
 } from 'react-native';
 
 import _ from 'lodash';
@@ -26,6 +25,8 @@ import IconInput from './IconInput';
 export default class SignUpLooking extends Component {
   constructor(props) {
     super(props);
+
+    this.api = new Api(this.props.navigator.props.eventEmitter);
 
     this.state = {
       username: '',
@@ -47,7 +48,7 @@ export default class SignUpLooking extends Component {
       passwordError: ''
     });
 
-    Api.auth().signUpLooking(
+    this.api.auth().signUpLooking(
       this.state.username,
       this.state.capacity,
       this.state.summary,

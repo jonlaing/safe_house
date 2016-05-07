@@ -4,9 +4,11 @@ import (
 	"math"
 	"regexp"
 	"safe_house/location"
+	"time"
 
 	"github.com/jasonmoo/geo"
 	"github.com/jinzhu/gorm"
+	"github.com/nu7hatch/gouuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,6 +22,10 @@ const (
 	UTLooking
 	// UTHousing is a user that is offering housing
 	UTHousing
+	// UTAdmin is a user that has verification abilities
+	UTAdmin
+	// UTSuperUser is a user who can promote users to Admin status
+	UTSuperUser
 )
 
 // UserStatus indicates whether a user has housing available
@@ -72,6 +78,8 @@ type User struct {
 	Password        string             `json:"password" sql:"-"`
 	PasswordConfirm string             `json:"password_confirm" sql:"-"`
 	Distance        location.Distancer `json:"distance" sql:"-"` // For displaying distances of matches
+	APIKey          string             `json:"-" sql:"unique_index"`
+	APIKeyExpire    time.Time          `json:"-"`
 }
 
 // GetUserByID finds a user based on their ID
@@ -87,6 +95,19 @@ func GetUserByID(id uint64, db *gorm.DB) (user User, err error) {
 func GetUserByName(username string, db *gorm.DB) (user User, err error) {
 	if err = db.Where("username = ?", username).Find(&user).Error; err != nil {
 		err = ErrUserNotFound
+	}
+
+	return
+}
+
+// GetUserByAPIKey finds a user based on their APIKey
+func GetUserByAPIKey(k string, db *gorm.DB) (u User, err error) {
+	if err = db.Where("api_key = ?", k).Find(&u).Error; err != nil {
+		err = ErrUserNotFound
+	}
+
+	if time.Now().After(u.APIKeyExpire) {
+		err = ErrAPIKeyExpired
 	}
 
 	return
@@ -112,7 +133,7 @@ func (u *User) Authenticate(password string) error {
 	return nil
 }
 
-// GenPasswordHash generates a hash from the provided password
+// GenPasswordHash generates a hash from the provided password. It does not save to the database.
 func (u *User) GenPasswordHash() error {
 	if u.Password == "" {
 		return ErrNoPassword
@@ -124,6 +145,34 @@ func (u *User) GenPasswordHash() error {
 	}
 
 	return err
+}
+
+// GenAPIKey generates a UUID for user authentication, as well as an expiration time
+func (u *User) GenAPIKey() error {
+	k, err := uuid.NewV4()
+	if err == nil {
+		u.APIKey = k.String()
+		u.GenAPIKeyExpire()
+	}
+
+	return err
+}
+
+// GenAPIKeyExpire sets a new expiration time for the user's APIKey
+func (u *User) GenAPIKeyExpire() {
+	u.APIKeyExpire = time.Now().Add(168 * time.Hour) // Expire after a week of inactivity
+}
+
+// UpdateAPIKey checks if the APIKey is set, and whether it has expired. If it's been set, and it's
+// not expired, then update the expiration time. If it hasn't been set, or it has expired, then
+// generate a new key and expiration time
+func (u *User) UpdateAPIKey() error {
+	if u.APIKey == "" || time.Now().After(u.APIKeyExpire) {
+		return u.GenAPIKey()
+	}
+
+	u.GenAPIKeyExpire()
+	return nil
 }
 
 // GenCoordinates converts a postal code into coordinates
@@ -157,6 +206,7 @@ func (u *User) Validate() (errors ValidationErrors) {
 	}
 
 	if u.Type < 0 || u.Type > UTHousing {
+		// Can't create admins or super users this way
 		errors = append(errors, UserTypeValidationError{})
 	}
 

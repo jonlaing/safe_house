@@ -2,7 +2,6 @@
 
 import React, {
   Component,
-  AsyncStorage,
   View
 } from 'react-native';
 
@@ -15,6 +14,7 @@ import IconButton from './IconButton';
 export default class MessageUserButton extends Component {
   constructor(props) {
     super(props);
+    this.api = new Api(this.props.navigator.props.eventEmitter);
     this.messager = new Messager();
 
     this.state = { status: 0, threadUserID: 0, threadID: 0, statusChangedBy: 0 };
@@ -26,7 +26,7 @@ export default class MessageUserButton extends Component {
   }
 
   _fetchStatus() {
-    Api.messages(this.props.token).thread(this.props.userID)
+    this.api.messages(this.props.token).thread(this.props.userID)
     .then(res => this.setState({
       status: res.message_thread.status,
       threadID: res.message_thread.id,
@@ -39,7 +39,7 @@ export default class MessageUserButton extends Component {
   _handleSubmit() {
     switch(this.state.status) {
             case 0:
-                    Api.messages(this.props.token).request(this.props.userID, this.messager.publicKey())
+                    this.api.messages(this.props.token).request(this.props.userID, this.messager.publicKey())
                     .then(res => { console.log(res); this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}); })
                     .catch(err => console.log(err));
                     break;
@@ -47,7 +47,7 @@ export default class MessageUserButton extends Component {
                     // if we're looking at the user who started the chat
                     // then we can accept the request
                     if(this.state.threadUserID === this.props.userID) {
-                      Api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
+                      this.api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
                       .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
                       .then(() => this.props.navigator.pop())
                       .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))

@@ -54,7 +54,7 @@ func UserCreate(c *gin.Context) {
 	}
 
 	// We should be all good, so log in the user
-	token, err := Login(user, c)
+	token, err := Login(&user, c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return

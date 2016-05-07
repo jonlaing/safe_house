@@ -23,6 +23,8 @@ export default class MatchScreen extends Component {
   constructor(props) {
     super(props);
 
+    this.api = new Api(this.props.navigator.props.eventEmitter);
+
     this.state = { user: {} };
   }
 
@@ -31,7 +33,7 @@ export default class MatchScreen extends Component {
   }
 
   componentDidMount() {
-    Api.matches(this.props.token).get(this.props.userID)
+    this.api.matches(this.props.token).get(this.props.userID)
     .then(res => this.setState({user: res}))
     .catch(err => console.log("err:", err));
   }

@@ -35,7 +35,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := Login(user, c)
+	token, err := Login(&user, c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return

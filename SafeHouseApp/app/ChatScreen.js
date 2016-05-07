@@ -19,12 +19,13 @@ export default class ChatScreen extends Component {
     super(props);
 
     this.messager = this.props.navigator.props.messager;
+    this.api = new Api(this.props.navigator.eventEmitter);
 
     this.state = { username: '', messages: [], pubKey: null };
   }
 
   componentDidMount() {
-    Api.messages(this.props.token).list(this.props.threadID)
+    this.api.messages(this.props.token).list(this.props.threadID)
     .then(res => this.setState({
       username: res.message_thread.user.username,
       messages: this.parseMessages(res.messages),
@@ -36,7 +37,7 @@ export default class ChatScreen extends Component {
   }
 
   openSocket() {
-     Api.messages(this.props.token).socket(this.props.threadID,
+     this.api.messages(this.props.token).socket(this.props.threadID,
         function (res) {
           let data = JSON.parse(res.data);
           let msgs = this.parseMessages(data.messages);
@@ -48,7 +49,7 @@ export default class ChatScreen extends Component {
   }
 
   handleSend(message) {
-    Api.messages(this.props.token).send(this.props.threadID, message.text, this.messager)
+    this.api.messages(this.props.token).send(this.props.threadID, message.text, this.messager)
     .then(res => console.log(res))
     .catch(err => console.log('err', err));
   }

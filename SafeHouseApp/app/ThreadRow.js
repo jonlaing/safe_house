@@ -55,7 +55,11 @@ export default class ThreadRow extends Component {
 
                     return I18n.t('waiting');
             default:
-                    return this.props.messager.decrypt(this.props.lastMessage);
+                    try {
+                      return this.props.messager.decrypt(this.props.lastMessage);
+                    } catch(e) {
+                      console.log(e);
+                    }
     }
   }
 

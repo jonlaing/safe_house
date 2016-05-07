@@ -29,6 +29,7 @@ class SafeHouseApp extends Component {
   componentDidMount() {
     this._getUserProps();
     this.eventEmitter.addListener('login', this._getUserProps.bind(this));
+    this.eventEmitter.addListener('logout', () => this.refs.nav.replace(Router.welcomeScreen()));
   }
 
   _getUserProps() {
@@ -52,7 +53,6 @@ class SafeHouseApp extends Component {
   }
 
   _initialRoute() {
-    console.log(this.state.userType);
     if(this.state.token !== null && this.state.tokenFetched === true && this.state.userType === 1) {
       return Router.matchList(this.state.token);
     }
@@ -77,6 +77,7 @@ class SafeHouseApp extends Component {
         userType={this.state.userType}
         eventEmitter={this.eventEmitter}
         messager={this.messager}
+        ref="nav"
       />
     );
   }

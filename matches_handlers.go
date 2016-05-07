@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"safe_house/location"
 	"safe_house/models"
 
@@ -43,8 +42,6 @@ func MatchesList(c *gin.Context) {
 		c.AbortWithError(http.StatusNotAcceptable, err)
 		return
 	}
-
-	log.Println(search.Page)
 
 	distance := location.NewDistancer(search.Distance, search.Unit)
 

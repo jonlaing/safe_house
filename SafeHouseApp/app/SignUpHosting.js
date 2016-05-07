@@ -27,6 +27,8 @@ export default class SignUpHosting extends Component {
   constructor(props) {
     super(props);
 
+    this.api = new Api(this.props.navigator.props.eventEmitter);
+
     this.state = {
       username: '',
       postalCode: '',
@@ -54,7 +56,7 @@ export default class SignUpHosting extends Component {
       passwordError: ''
     });
 
-    Api.auth().signUpHosting(
+    this.api.auth().signUpHosting(
       this.state.username,
       this.state.postalCode,
       this.state.capacity,

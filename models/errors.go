@@ -7,6 +7,7 @@ var (
 	ErrWrongPassword = errors.New("Password doesn't match")
 	ErrNoPassword    = errors.New("Password hash couldn't be generated because the password was blank")
 	ErrNoPublicKey   = errors.New("PublicKey wasn't set for this user")
+	ErrAPIKeyExpired = errors.New("APIKey has expired for this user")
 
 	ErrGeolocation = errors.New("Couldn't calculate location of user based on PostalCode")
 

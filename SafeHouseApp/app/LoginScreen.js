@@ -26,6 +26,8 @@ export default class LoginScreen extends Component {
   constructor(props) {
     super(props);
 
+    this.api = new Api(this.props.navigator.props.eventEmitter);
+
     this.state = {
       username: '',
       password: '',
@@ -39,7 +41,7 @@ export default class LoginScreen extends Component {
 
     let messager = new Messager();
     messager.getKeys().then((keys) => {
-      Api.auth().login(this.state.username, this.state.password, keys.pub)
+      this.api.auth().login(this.state.username, this.state.password, keys.pub)
       .then(res => this._handleSuccess(res))
       .catch(err => {
         console.log(err);

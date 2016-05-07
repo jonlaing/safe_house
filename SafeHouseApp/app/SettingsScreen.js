@@ -14,9 +14,13 @@ import Router from './Router';
 import NavBarMain from './NavBarMain';
 
 export default class SettingsScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.api = new Api(this.props.navigator.props.eventEmitter);
+  }
+
   handleLogout() {
-    Api.auth().logout()
-    .then(() => this.props.navigator.replace(Router.welcomeScreen()))
+    this.api.auth().logout()
     .catch(err => console.log(err));
   }
 
