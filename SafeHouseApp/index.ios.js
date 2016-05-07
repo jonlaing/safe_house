@@ -23,7 +23,7 @@ class SafeHouseApp extends Component {
     super(props);
 
     this.eventEmitter = new EventEmitter();
-    this.api = new Api(this.eventEmitter);
+    this.api = new Api(this.eventEmitter, true); // true: production
     this.messager = new Messager();
     this.state = { token: null, tokenFetched: false, userType: 0 };
   }

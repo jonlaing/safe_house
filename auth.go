@@ -1,12 +1,18 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"safe_house/models"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/nu7hatch/gouuid"
 )
 
 const hmacKeyPath = "keys/hmac.key"
@@ -17,7 +23,31 @@ func init() {
 	var err error
 	hmacKey, err = ioutil.ReadFile(hmacKeyPath)
 	if err != nil {
-		panic(err)
+		// hmac doesn't exist, let's create one!
+		secret, err := uuid.NewV4()
+		if err != nil {
+			panic(fmt.Sprintf("Couldn't generate hmac key: %v", err))
+		}
+
+		h := hmac.New(sha256.New, []byte(secret.String()))
+
+		// create the file to write to
+		file, err := os.Create(hmacKeyPath)
+		if err != nil {
+			panic(fmt.Sprintf("Couldn't open hmac key file for writing: %v", err))
+		}
+		defer file.Close() // definitely make sure to close it
+
+		// write the hash to the file
+		if _, err := io.Copy(h, file); err != nil {
+			panic(fmt.Sprintf("Couldn't write hmac key to file: %v", err))
+		}
+
+		// try reading again, if not, we fucked up
+		hmacKey, err = ioutil.ReadFile(hmacKeyPath)
+		if err != nil {
+			panic("couldn't read hmac file")
+		}
 	}
 }
 
