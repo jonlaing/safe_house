@@ -44,20 +44,12 @@ export default class MessageUserButton extends Component {
                     .catch(err => console.log(err));
                     break;
             case 1:
+            case 3:
                     // if we're looking at the user who started the chat
                     // then we can accept the request
                     if(this.state.threadUserID === this.props.userID) {
                       this.api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
                       .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
-                      .then(() => this.props.navigator.pop())
-                      .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))
-                      .catch(err => console.log(err));
-                    }
-                    break;
-            case 3:
-                    if(this.state.threadUserID === this.props.userID && this.state.statusChangedBy === 2) {
-                      this.api.messages(this.props.token).publicKey(this.props.threadID, this.messager.publicKey())
-                      .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id, statusChangedBy: res.status_changed_by}))
                       .then(() => this.props.navigator.pop())
                       .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))
                       .catch(err => console.log(err));
@@ -97,8 +89,7 @@ export default class MessageUserButton extends Component {
                         name="schedule"
                         label={I18n.t('waiting')}
                         primary={false}
-                        large={true}
-                        onPress={this._handleSubmit.bind(this)} />
+                        large={true} />
                     );
             case 3:
                     console.log(this.state.statusChangedBy);
@@ -118,8 +109,7 @@ export default class MessageUserButton extends Component {
                         name="schedule"
                         label={I18n.t('pubKeyWaiting')}
                         primary={false}
-                        large={true}
-                        onPress={this._handleSubmit.bind(this)} />
+                        large={true} />
                     );
 
             default:
