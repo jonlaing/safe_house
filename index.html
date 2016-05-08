@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>SafeHouse by jonlaing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">SafeHouse</h1>
+      <h2 class="project-tagline">Digital &quot;Underground Railroad&quot; for Immigrants, Refugees, and their Supporters</h2>
+      <a href="https://github.com/jonlaing/safe_house" class="btn">View on GitHub</a>
+      <a href="https://github.com/jonlaing/safe_house/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/jonlaing/safe_house/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="safehouse" class="anchor" href="#safehouse" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SafeHouse</h1>
+
+<hr>
+
+<h2>
+<a id="mission" class="anchor" href="#mission" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Mission</h2>
+
+<p>The developers of SafeHouse firmly believe that the enforcment of borders only furthers to isolate us as humans and limit our freedom and self-determination. We believe the witch hunts against "illegal immigrants" and "refugees" to be abominable and agencies that enforce borders to be wholly illegitimate. It is with these beliefs that we have developed SafeHouse in an attempt to mitigate the tyranny imposed by borders upon the poor and desparate of the world.</p>
+
+<h2>
+<a id="goal" class="anchor" href="#goal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goal</h2>
+
+<p>SafeHouse is designed with the intent of using technology to facilitate an "underground railroad" of sorts; linking those in need, with those who wish to help. It is intended to be an easy and relatively safe way to seek and lend solidarity with immigrants and refugees.</p>
+
+<h2>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How It Works</h2>
+
+<h3>
+<a id="for-those-that-are-looking-for-housing" class="anchor" href="#for-those-that-are-looking-for-housing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>For those that are looking for housing</h3>
+
+<p>Getting set up with SafeHouse is easy! The signup process only requires you to enter a username (does not have to be your real name), and how many people you need to house and for how long. From there, the app will match you with housing in the area based on the Geolocation on your phone. From there you can request to chat with people who are offering housing to make arrangements. The chats are Peer-to-Peer encrypted, so no one but the two parties involved can see the messages.</p>
+
+<h3>
+<a id="for-those-that-are-offering-housing" class="anchor" href="#for-those-that-are-offering-housing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>For those that are offering housing</h3>
+
+<p>Offering housing with SafeHouse is simple. We <strong>do not</strong> require you to provide your address! All that you need to to tell us is your postal code, how many people you can house and for how long. Using your postal code, we determine an <em>approximate</em> location for your home, so that those in need can find you, and see approximately how far away you are. Those looking for housing will request to contact you, and from there you can set up an encrypted chat to make arrangements. The chats are Peer-to-Peer encrypted, so no one but the two parties involved can see the messages.</p>
+
+<h2>
+<a id="get-involved" class="anchor" href="#get-involved" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Involved</h2>
+
+<p>SafeHouse is still in active development, but there are many ways to get involved! Here are some skills that we need:</p>
+
+<ul>
+<li>
+<strong>Translators:</strong> Being that this problem is global, we need to represent as many languages as possible. If you fluently speak a language other than English, get in touch! We may need your help.</li>
+<li>
+<strong>Developers:</strong> Obviously, SafeHouse can always use more help on the tech front. It is an opensource project, so anyone is free to contribute. The backend is written in <a href="http://golang.org">Golang</a> and the App itself is written with <a href="https://facebook.github.io/react-native/">React Native</a>. Scroll down to see instructions on how to contribute.</li>
+<li>
+<strong>IT People:</strong> Getting all the moving parts to work nicely is a big challenge. If you have any expertise to offer in setting up Ops, get in touch!</li>
+<li>
+<strong>Security People:</strong> The people who use SafeHouse might be under the scrutiny of various agencies and other malefactors. We need to keep our security airtight for our users' safety. If this is your thing, please contact us.</li>
+<li>
+<strong>Donations:</strong> We don't have a way to donate set up quite yet, but we will be needing to pay for server space and other operational costs. We'll be doing this out-of-pocket initially, but it would be nice if the project financed itself.</li>
+</ul>
+
+<hr>
+
+<h2>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h2>
+
+<p>This repository is a mix of <a href="http://golang.org">Golang</a> and <a href="https://facebook.github.io/react-native/">ReactNative</a>. To get set up, you'll need a few things. First, if you're not setup with Golang, follow the installation instructions <a href="https://golang.org/dl/">here.</a></p>
+
+<p>After that, clone the project onto your local machine:</p>
+
+<pre><code>git clone https://github.com/jonlaing/safe_house.git &amp;&amp; cd safe_house
+</code></pre>
+
+<h3>
+<a id="server" class="anchor" href="#server" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Server</h3>
+
+<p>Next, you'll need <a href="https://github.com/tools/godep">Godep</a> for dependency management for the server:</p>
+
+<pre><code>go get github.com/tools/godep
+</code></pre>
+
+<p>Install the dependencies for the server by using the following:</p>
+
+<pre><code>godep go install ./...
+</code></pre>
+
+<p>Next, I generally start the server by running:</p>
+
+<pre><code>godep go install ./... &amp;&amp; safe_house
+</code></pre>
+
+<h3>
+<a id="app" class="anchor" href="#app" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>App</h3>
+
+<p>I should note that SafeHouse currently only works for iOS, but this is an issue we hope to fix <em>very</em> shortly. For now, to get set up with the ReactNative project, navigate to the App directory with:</p>
+
+<pre><code>cd ./SafeHouseApp
+</code></pre>
+
+<p>You'll need to get the node dependencies. You can do so by running:</p>
+
+<pre><code>npm install
+</code></pre>
+
+<p>From there, you can open <code>safe_house/SafeHouseApp/ios/SafeHouseApp.xcodeproj</code> in Xcode and run it in the simulator. Make sure the server is running, or nothing will work!</p>
+
+<p>To work on the app, most of the React Native components are located in <code>safe_house/SafeHouseApp/app</code>.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/jonlaing/safe_house">SafeHouse</a> is maintained by <a href="https://github.com/jonlaing">jonlaing</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
