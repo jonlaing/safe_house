@@ -295,6 +295,7 @@ func (u *User) UpdatePublicKey(k string, db *gorm.DB) error {
 	if err := db.Table("message_threads").
 		Where("id IN (?)", threadIDs).
 		Where("user_id = ?", u.ID).
+		Where("status = ?", MTOpened). // only change the status if they're actively talking
 		UpdateColumn("status", MTPubKeyChange).
 		UpdateColumn("status_changed_by", MTSInitiator).Error; err != nil {
 		return err
@@ -303,6 +304,7 @@ func (u *User) UpdatePublicKey(k string, db *gorm.DB) error {
 	err := db.Table("message_threads").
 		Where("id IN (?)", threadIDs).
 		Where("user_id != ?", u.ID).
+		Where("status = ?", MTOpened).
 		UpdateColumn("status", MTPubKeyChange).
 		UpdateColumn("status_changed_by", MTSAccepter).Error
 

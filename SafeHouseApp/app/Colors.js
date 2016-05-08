@@ -1,5 +1,5 @@
 const Colors = {
-  action: '#00ff7f',
+  action: '#00D66B',
   lighterGrey: 'rgb(242,242,242)'
 };
 

@@ -13,6 +13,7 @@ import React, {
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import dismissKeyboard from 'react-native-dismiss-keyboard';
 
 import I18n from './i18n';
 import Colors from './Colors';
@@ -54,8 +55,6 @@ export default class SignUpLooking extends Component {
       this.state.password,
       this.state.passwordConfirm
     )
-    .then(resp => console.log(resp))
-    .then(() => this.props.navigator.pop())
     .catch((err) => this._handleErrors(err));
   }
 
@@ -87,6 +86,8 @@ export default class SignUpLooking extends Component {
     if(this.state.showCapacityPicker !== true) {
       return <View />;
     }
+
+    dismissKeyboard();
 
     return (
       <Picker
@@ -123,7 +124,9 @@ export default class SignUpLooking extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps={true}
+          >
           <View style={styles.scroll}>
             <IconInput name="account-circle" error={this.state.usernameError}>
               <TextInput

@@ -238,7 +238,7 @@ func (mt *MessageThread) UpdateStatus(status ThreadStatus, u *User, db *gorm.DB)
 	mt.Status = status
 	mt.UpdatedAt = time.Now()
 
-	return db.Save(&mt).Error
+	return db.Save(mt).Error
 }
 
 func (mt *MessageThread) GetMessages(userID uint64, db *gorm.DB) (ms []Message, err error) {

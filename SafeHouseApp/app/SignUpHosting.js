@@ -13,6 +13,7 @@ import React, {
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import dismissKeyboard from 'react-native-dismiss-keyboard';
 
 import I18n from './i18n';
 import Colors from './Colors';
@@ -63,9 +64,6 @@ export default class SignUpHosting extends Component {
       this.state.password,
       this.state.passwordConfirm
     )
-    .then(resp => console.log(resp))
-    .then(() => this.props.navigator.props.eventEmitter.emit('login'))
-    .then(() => this.props.navigator.pop())
     .catch((err) => this._handleErrors(err));
   }
 
@@ -104,6 +102,8 @@ export default class SignUpHosting extends Component {
       return <View />;
     }
 
+    dismissKeyboard();
+
     return (
       <Picker
         style={styles.picker}
@@ -141,6 +141,8 @@ export default class SignUpHosting extends Component {
       return <View />;
     }
 
+    dismissKeyboard();
+
     return (
       <Picker
         style={styles.picker}
@@ -152,6 +154,10 @@ export default class SignUpHosting extends Component {
         <Picker.Item label="Long Term" value={3} />
       </Picker>
     );
+  }
+
+  _dismissPickers() {
+    this.setState({showCapacityPicker: false, showDurationPicker: false});
   }
 
   _durationToString() {
@@ -170,7 +176,9 @@ export default class SignUpHosting extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps={true}
+          >
           <View style={styles.scroll}>
             <IconInput name="account-circle" error={this.state.usernameError}>
               <TextInput
@@ -181,6 +189,7 @@ export default class SignUpHosting extends Component {
                 value={this.state.username}
                 autoFocus={true}
                 onChangeText={text => this.setState({username: text})}
+                onFocus={this._dismissPickers.bind(this)}
               />
             </IconInput>
             <IconInput name="place" error={this.state.postalCodeError}>
@@ -191,10 +200,11 @@ export default class SignUpHosting extends Component {
                 autoCapitalize='none'
                 autoCorrect={false}
                 onChangeText={text => this.setState({postalCode: text})}
+                onFocus={this._dismissPickers.bind(this)}
               />
             </IconInput>
             <IconInput name="people" error={this.state.capacityError}>
-              <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showCapacityPicker: true})}>
+              <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showCapacityPicker: true, showDurationPicker: false})}>
                 <TextInput
                   style={[styles.input, {color: 'grey'}]}
                   placeholder={I18n.t('capacity')}
@@ -204,7 +214,7 @@ export default class SignUpHosting extends Component {
               </TouchableHighlight>
             </IconInput>
             <IconInput name="access-time" error={this.state.durationError}>
-              <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showDurationPicker: true})}>
+              <TouchableHighlight style={{flex: 1}} onPress={() => this.setState({showDurationPicker: true, showCapacityPicker: false})}>
                 <TextInput
                   style={[styles.input, {color: 'grey'}]}
                   placeholder={I18n.t('duration')}
@@ -221,6 +231,7 @@ export default class SignUpHosting extends Component {
                 onChangeText={text => this.setState({summary: text})}
                 multiline={true}
                 returnKeyType='done'
+                onFocus={this._dismissPickers.bind(this)}
               />
             </IconInput>
             <IconInput name="lock" error={this.state.passwordError}>
@@ -230,6 +241,7 @@ export default class SignUpHosting extends Component {
                 value={this.state.password}
                 secureTextEntry={true}
                 onChangeText={text => this.setState({password: text})}
+                onFocus={this._dismissPickers.bind(this)}
               />
             </IconInput>
             <IconInput name="lock-outline" error={this.state.passwordError}>
@@ -239,6 +251,7 @@ export default class SignUpHosting extends Component {
                 value={this.state.passwordConfirm}
                 secureTextEntry={true}
                 onChangeText={text => this.setState({passwordConfirm: text})}
+                onFocus={this._dismissPickers.bind(this)}
               />
             </IconInput>
           </View>

@@ -76,8 +76,8 @@ class Api {
         console.log(res.user.type);
         return new Promise((resolve, reject) => {
           AsyncStorage.multiSet([['AUTH_TOKEN', res.token], ['username', res.user.username], ['user_type', res.user.type.toString()]])
-          .then(() => this.emitter.emit('login'))
           .then(() => resolve(res))
+          .then(() => this.emitter.emit('login'))
           .catch(err => reject(err));
         });
       },
@@ -239,6 +239,17 @@ class Api {
 
       accept: (threadID, pubKey) => {
         return fetch(`http://${this.location}/threads/${threadID}/accept`, {
+          headers: _headers(token),
+          body: JSON.stringify({
+            public_key: pubKey
+          }),
+          method: 'PATCH'
+        })
+        .then(res => this._processJSON(res));
+      },
+
+      publicKey: (threadID, pubKey) => {
+        return fetch(`http://${this.location}/threads/${threadID}/public_key`, {
           headers: _headers(token),
           body: JSON.stringify({
             public_key: pubKey

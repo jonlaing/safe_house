@@ -23,35 +23,52 @@ class SafeHouseApp extends Component {
     super(props);
 
     this.eventEmitter = new EventEmitter();
-    this.api = new Api(this.eventEmitter, true); // true: production
+    this.api = new Api(this.eventEmitter, true); // true: production, false: development
     this.messager = new Messager();
     this.state = { token: null, tokenFetched: false, userType: 0 };
   }
 
   componentDidMount() {
     this._getUserProps();
-    this.eventEmitter.addListener('login', this._getUserProps.bind(this));
+    this.eventEmitter.addListener('login', this._loggedIn.bind(this));
     this.eventEmitter.addListener('logout', () => this.refs.nav.replace(Router.welcomeScreen()));
   }
 
   _getUserProps() {
-    AsyncStorage.multiGet(['AUTH_TOKEN', 'user_type'])
-    .then(stores => {
-      let tok, uType;
-      stores.map((v, k, store) => {
-        if(store[k][0] === 'AUTH_TOKEN') {
-          tok = store[k][1];
-        }
+    return new Promise((resolve, reject) => {
+      AsyncStorage.multiGet(['AUTH_TOKEN', 'user_type'])
+      .then(stores => {
+        let tok, uType;
+        stores.map((v, k, store) => {
+          if(store[k][0] === 'AUTH_TOKEN') {
+            tok = store[k][1];
+          }
 
-        if(store[k][0] === 'user_type') {
-          uType = store[k][1];
-        }
-      });
+          if(store[k][0] === 'user_type') {
+            uType = store[k][1];
+          }
+        });
 
-      this.setState({token: tok, tokenFetched: true, userType: parseInt(uType)});
+        this.setState({token: tok, tokenFetched: true, userType: parseInt(uType)});
+        resolve({token: tok, userType: parseInt(uType)});
+      })
+      .then(() => this.messager.getKeys()) // generate keys if they're not already there
+      .catch((err) => { console.log(err); this.setState({tokenFetched: true}); reject(err); });
+    });
+  }
+
+  _loggedIn() {
+    this._getUserProps()
+    .then((stores) => {
+      if(stores.userType === 1) {
+        this.refs.navigator.push(Router.matchList(this.state.token));
+      } else if(stores.userType === 2) {
+        this.refs.navigator.push(Router.threadList(this.state.token));
+      } else {
+        console.log("there was a problem finding the log in route");
+      }
     })
-    .then(() => this.messager.getKeys()) // generate keys if they're not already there
-    .catch((err) => { console.log(err); this.setState({tokenFetched: true}); });
+    .catch(err => console.log(err));
   }
 
   _initialRoute() {

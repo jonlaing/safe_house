@@ -29,7 +29,8 @@ export default class MessageUserButton extends Component {
     .then(res => this.setState({
       status: res.message_thread.status,
       threadID: res.message_thread.id,
-      threadUserID: res.message_thread.user_id
+      threadUserID: res.message_thread.user_id,
+      statusChangedBy: res.message_thread.status_changed_by
     }))
     .then(() => console.log(this.state.status, this.state.threadID, this.state.threadUserID))
     .catch(err => console.log(err)); // the thread probably just doesn't exist...
@@ -48,6 +49,15 @@ export default class MessageUserButton extends Component {
                     if(this.state.threadUserID === this.props.userID) {
                       this.api.messages(this.props.token).accept(this.props.threadID, this.messager.publicKey())
                       .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id}))
+                      .then(() => this.props.navigator.pop())
+                      .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))
+                      .catch(err => console.log(err));
+                    }
+                    break;
+            case 3:
+                    if(this.state.threadUserID === this.props.userID && this.state.statusChangedBy === 2) {
+                      this.api.messages(this.props.token).publicKey(this.props.threadID, this.messager.publicKey())
+                      .then(res => this.setState({status: res.status, threadID: res.id, threadUserID: res.user_id, statusChangedBy: res.status_changed_by}))
                       .then(() => this.props.navigator.pop())
                       .then(() => this.props.navigator.props.eventEmitter.emit('chat-accept'))
                       .catch(err => console.log(err));
@@ -91,6 +101,7 @@ export default class MessageUserButton extends Component {
                         onPress={this._handleSubmit.bind(this)} />
                     );
             case 3:
+                    console.log(this.state.statusChangedBy);
                     if(this.state.threadUserID === this.props.userID && this.state.statusChangedBy === 2) {
                       return (
                         <IconButton
