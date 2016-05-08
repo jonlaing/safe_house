@@ -256,7 +256,7 @@ func (mt *MessageThread) GetMessages(userID uint64, db *gorm.DB) (ms []Message, 
 
 // GetLastMessage fills in the last message of a message thread
 func (mt *MessageThread) GetLastMessage(userID uint64, db *gorm.DB) error {
-	err := db.Where("thread_id = ?", mt.ID).Order("created_at DESC").Find(&mt.LastMessage).Error
+	err := db.Where("thread_id = ?", mt.ID).Order("created_at DESC").Limit(1).Find(&mt.LastMessage).Error
 	mt.LastMessage.IsMe = mt.LastMessage.UserID == userID
 	return err
 }

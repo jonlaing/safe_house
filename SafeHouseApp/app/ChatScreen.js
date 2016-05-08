@@ -66,6 +66,12 @@ export default class ChatScreen extends Component {
         };
       } catch(e) {
         console.log(e);
+        return {
+          uniqueId: message.id,
+          view: <View><Icon name="lock" size={32} color="grey" /></View>,
+          position: message.is_me ? 'right' : 'left', // left for received messages, right for sent messages, center for server messages
+          date: message.created_at
+        };
       }
     });
   }
